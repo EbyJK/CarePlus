@@ -1,0 +1,56 @@
+﻿### 1. User Management - Create Admin Account
+POST http://localhost:3000/user-management/users
+Content-Type: application/json
+
+{
+  "email": "demo.admin@example.com",
+  "password": "Password123!",
+  "firstName": "Demo",
+  "lastName": "Admin",
+  "role": "admin"
+}
+
+### 2. User Management - Login (Copy token from response)
+# @name login
+POST http://localhost:3000/user-management/auth/login
+Content-Type: application/json
+
+{
+  "email": "demo.admin@example.com",
+  "password": "Password123!"
+}
+
+### 3. User Management - Get All Users
+GET http://localhost:3000/user-management/users
+Authorization: Bearer {{login.response.body.data.accessToken}}
+
+### 4. User Management - Request Password Reset OTP
+POST http://localhost:3000/user-management/auth/forgot-password/otp
+Content-Type: application/json
+
+{
+  "email": "demo.admin@example.com"
+}
+
+### 5. SMS Module - Send Test SMS
+POST http://localhost:3000/sms/send
+Authorization: Bearer {{login.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "to": "+14155552671",
+  "message": "Demo SMS Message!"
+}
+
+### 6. SMS Module - Get SMS Logs
+GET http://localhost:3000/sms/logs
+Authorization: Bearer {{login.response.body.data.accessToken}}
+
+### 7. Telegram Module - Broadcast Message to Channel
+POST http://localhost:3000/telegram/broadcast
+Authorization: Bearer {{login.response.body.data.accessToken}}
+Content-Type: application/json
+
+{
+  "message": "Demo Telegram Broadcast Message!"
+}
