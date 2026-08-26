@@ -21,7 +21,7 @@ import { UserOtp } from './user-management/entities/user-otp.entity';
       envFilePath: '.env',
     }),
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'uploads'),
+      rootPath: join(process.cwd(), 'uploads'),
       serveRoot: '/uploads',
     }),
     TypeOrmModule.forRootAsync({
