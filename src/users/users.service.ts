@@ -1,10 +1,11 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { removeFileFromDisk } from './config/avatar-storage.config';
 
 @Injectable()
 export class UsersService {
@@ -65,8 +66,44 @@ export class UsersService {
     return updated;
   }
 
+  async uploadAvatar(id: string, file?: Express.Multer.File): Promise<User> {
+    if (!file) {
+      throw new BadRequestException('Image file is required');
+    }
+
+    const user = await this.findOne(id);
+
+    // If user already has an existing avatar, clean up old file from disk
+    if (user.avatarUrl) {
+      removeFileFromDisk(user.avatarUrl);
+    }
+
+    const relativeAvatarUrl = `/uploads/avatars/${file.filename}`;
+    user.avatarUrl = relativeAvatarUrl;
+
+    const updated = await this.userRepository.save(user);
+    delete updated.password;
+    return updated;
+  }
+
+  async removeAvatar(id: string): Promise<User> {
+    const user = await this.findOne(id);
+
+    if (user.avatarUrl) {
+      removeFileFromDisk(user.avatarUrl);
+      user.avatarUrl = null;
+      await this.userRepository.save(user);
+    }
+
+    delete user.password;
+    return user;
+  }
+
   async remove(id: string): Promise<{ message: string }> {
     const user = await this.findOne(id);
+    if (user.avatarUrl) {
+      removeFileFromDisk(user.avatarUrl);
+    }
     await this.userRepository.remove(user);
     return { message: `User with ID ${id} deleted successfully` };
   }

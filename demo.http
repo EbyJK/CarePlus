@@ -1,4 +1,4 @@
-﻿### 1. User Management - Create Admin Account
+### 1. User Management - Create Admin Account
 POST http://localhost:3000/user-management/users
 Content-Type: application/json
 
@@ -54,3 +54,20 @@ Content-Type: application/json
 {
   "message": "Demo Telegram Broadcast Message!"
 }
+
+### 8. Users Module - Upload User Avatar (Replace USER_ID and path to file)
+POST http://localhost:3000/users/USER_ID_HERE/avatar
+Authorization: Bearer {{login.response.body.data.accessToken}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="sample.png"
+Content-Type: image/png
+
+< ./sample.png
+--boundary--
+
+### 9. Users Module - Delete User Avatar
+DELETE http://localhost:3000/users/USER_ID_HERE/avatar
+Authorization: Bearer {{login.response.body.data.accessToken}}
+
