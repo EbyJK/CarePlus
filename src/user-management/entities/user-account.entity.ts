@@ -1,4 +1,4 @@
-﻿import {
+import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
@@ -51,7 +51,7 @@ export class UserAccount {
   @Column({ type: 'integer', default: 0 })
   failedLoginAttempts: number;
 
-  @Column({ type: 'datetime', nullable: true })
+  @Column({ nullable: true })
   lockedUntil: Date | null;
 
   @Column({ type: 'varchar', length: 1000, nullable: true })
@@ -63,7 +63,7 @@ export class UserAccount {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @Column({ type: 'datetime', nullable: true })
+  @Column({ nullable: true })
   deletedAt: Date | null;
 
   @OneToMany(() => UserAuditAction, (log) => log.userAccount)

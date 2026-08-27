@@ -1,4 +1,4 @@
-﻿import {
+import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
@@ -24,7 +24,7 @@ export class UserOtp {
   @Column({ type: 'boolean', default: false })
   isUsed: boolean;
 
-  @Column({ type: 'datetime', nullable: false })
+  @Column({ nullable: false })
   expiresAt: Date;
 
   @CreateDateColumn()
