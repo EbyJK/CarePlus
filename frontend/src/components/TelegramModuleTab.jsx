@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { api } from '../services/api';
-import { Radio, Send, Image, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
+import { Radio, Send, Image, CheckCircle2, AlertCircle, Sparkles, Upload } from 'lucide-react';
 
 const BROADCAST_PRESETS = [
   {
@@ -47,6 +47,21 @@ export default function TelegramModuleTab() {
       setTextStatus({ type: 'error', msg: err.message });
     } finally {
       setLoadingText(false);
+    }
+  };
+
+  const handleLocalPhotoUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoData((prev) => ({ ...prev, photoUrl: reader.result }));
+        setPhotoStatus({
+          type: 'info',
+          msg: `Local image "${file.name}" loaded successfully. Ready to broadcast to Telegram!`,
+        });
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -175,11 +190,17 @@ export default function TelegramModuleTab() {
               </div>
 
               <div className="form-group mb-3">
-                <label>Media Photo URL</label>
+                <div className="flex-between">
+                  <label>Media Photo URL or Local Computer Image</label>
+                  <label className="btn-link-sm text-cyan cursor-pointer">
+                    <Upload size={14} /> Upload Local Image File
+                    <input type="file" accept="image/*" onChange={handleLocalPhotoUpload} hidden />
+                  </label>
+                </div>
                 <input
-                  type="url"
+                  type="text"
                   required
-                  placeholder="https://images.unsplash.com/..."
+                  placeholder="https://images.unsplash.com/... or Base64 Image Data"
                   value={photoData.photoUrl}
                   onChange={(e) => setPhotoData({ ...photoData, photoUrl: e.target.value })}
                 />
@@ -196,7 +217,7 @@ export default function TelegramModuleTab() {
                 ></textarea>
               </div>
 
-              <button type="submit" className="btn btn-indigo btn-lg" disabled={loadingPhoto}>
+              <button type="submit" className="btn btn-blue btn-lg" disabled={loadingPhoto}>
                 <Image size={16} /> {loadingPhoto ? 'Sending Photo...' : 'Broadcast Photo Update'}
               </button>
 

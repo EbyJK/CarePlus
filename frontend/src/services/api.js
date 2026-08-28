@@ -54,6 +54,45 @@ export const api = {
       body: JSON.stringify(userData),
     }),
 
+  updateUser: (id, userData) =>
+    request(`/user-management/users/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(userData),
+    }),
+
+  toggleUserStatus: (id, isActive) =>
+    request(`/user-management/users/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ isActive }),
+    }),
+
+  deleteUser: (id) =>
+    request(`/user-management/users/${id}`, {
+      method: 'DELETE',
+    }),
+
+  getUserAuditLogs: (id) =>
+    request(`/user-management/users/${id}/audit-logs`),
+
+  // Password Management Endpoints
+  changePassword: (data) =>
+    request('/user-management/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  requestForgotPasswordOtp: (data) =>
+    request('/user-management/auth/forgot-password/otp', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  resetPasswordWithOtp: (data) =>
+    request('/user-management/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
   // SMS Endpoints
   sendSms: (smsData) =>
     request('/sms/send', {

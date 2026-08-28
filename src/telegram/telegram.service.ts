@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import * as https from 'https';
+import * as FormData from 'form-data';
 import { SendChannelMessageDto } from './dto/send-channel-message.dto';
 import { SendChannelPhotoDto } from './dto/send-channel-photo.dto';
 
@@ -58,17 +59,43 @@ export class TelegramService {
 
   async sendPhotoToChannel(dto: SendChannelPhotoDto): Promise<any> {
     const chatId = dto.channelId || this.getDefaultChannelId();
+    const url = `${this.getApiUrl()}/sendPhoto`;
+
     try {
-      const url = `${this.getApiUrl()}/sendPhoto`;
+      if (dto.photoUrl && dto.photoUrl.startsWith('data:image')) {
+        const base64Data = dto.photoUrl.replace(/^data:image\/\w+;base64,/, '');
+        const buffer = Buffer.from(base64Data, 'base64');
+        const form = new FormData();
+        form.append('chat_id', chatId);
+        form.append('caption', dto.caption || '');
+        form.append('parse_mode', 'HTML');
+        form.append('photo', buffer, { filename: 'clinical_photo.png' });
+
+        const response = await firstValueFrom(
+          this.httpService.post(url, form, {
+            headers: form.getHeaders(),
+            httpsAgent: this.httpsAgent,
+          }),
+        );
+        this.logger.log(`Telegram Base64 photo uploaded successfully to channel: ${chatId}`);
+        return response.data;
+      }
+
       const response = await firstValueFrom(
-        this.httpService.post(url, {
-          chat_id: chatId,
-          photo: dto.photoUrl,
-          caption: dto.caption,
-          parse_mode: 'HTML',
-        }),
+        this.httpService.post(
+          url,
+          {
+            chat_id: chatId,
+            photo: dto.photoUrl,
+            caption: dto.caption,
+            parse_mode: 'HTML',
+          },
+          {
+            httpsAgent: this.httpsAgent,
+          },
+        ),
       );
-      this.logger.log(`Telegram photo sent successfully to channel: ${chatId}`);
+      this.logger.log(`Telegram photo URL sent successfully to channel: ${chatId}`);
       return response.data;
     } catch (error) {
       const errorDetail = error.response?.data || error.message;

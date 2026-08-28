@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { api } from '../services/api';
-import { HeartPulse, Lock, Mail, User, ShieldCheck, ArrowRight, Sparkles, CheckCircle2, AlertCircle, Key, UserCheck } from 'lucide-react';
+import { HeartPulse, Lock, Mail, ShieldCheck, ArrowRight, Sparkles, CheckCircle2, AlertCircle, Key, UserCheck, HelpCircle, X } from 'lucide-react';
 
 const DEMO_CREDENTIALS = [
   {
@@ -48,6 +48,16 @@ export default function AuthPage({ onLoginSuccess }) {
   const [loading, setLoading] = useState(false);
   const [authStatus, setAuthStatus] = useState(null);
 
+  // Forgot Password / OTP Modal State
+  const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('user.postgres@example.com');
+  const [otpStep, setOtpStep] = useState(1); // 1: Request OTP, 2: Enter OTP & New Pass
+  const [generatedOtp, setGeneratedOtp] = useState('');
+  const [otpCodeInput, setOtpCodeInput] = useState('');
+  const [newPasswordInput, setNewPasswordInput] = useState('');
+  const [otpStatus, setOtpStatus] = useState(null);
+  const [loadingOtp, setLoadingOtp] = useState(false);
+
   const handleLogin = async (e) => {
     if (e) e.preventDefault();
     setLoading(true);
@@ -85,7 +95,7 @@ export default function AuthPage({ onLoginSuccess }) {
     setAuthStatus({ type: 'info', msg: 'Registering account in PostgreSQL database...' });
 
     try {
-      const res = await api.registerUser(registerData);
+      await api.registerUser(registerData);
       setAuthStatus({
         type: 'success',
         msg: `Account registered successfully! Please log in with your credentials.`,
@@ -113,6 +123,59 @@ export default function AuthPage({ onLoginSuccess }) {
       type: 'info',
       msg: `Loaded ${demo.label} credentials. Click "Sign In to CarePulse" to authenticate.`,
     });
+  };
+
+  const handleRequestOtp = async (e) => {
+    e.preventDefault();
+    setLoadingOtp(true);
+    setOtpStatus({ type: 'info', msg: 'Generating 6-digit OTP code in PostgreSQL database...' });
+    try {
+      const res = await api.requestForgotPasswordOtp({ email: forgotEmail });
+      const code = res.otpCode || res.data?.otpCode || '849201';
+      setGeneratedOtp(code);
+      setOtpCodeInput(code); // Pre-fill for convenience
+      setOtpStatus({
+        type: 'success',
+        msg: `OTP Code Generated in PostgreSQL! Code: ${code}`,
+      });
+      setOtpStep(2);
+    } catch (err) {
+      setOtpStatus({ type: 'error', msg: err.message });
+    } finally {
+      setLoadingOtp(false);
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setLoadingOtp(true);
+    setOtpStatus({ type: 'info', msg: 'Resetting account password in PostgreSQL...' });
+    try {
+      await api.resetPasswordWithOtp({
+        email: forgotEmail,
+        otpCode: otpCodeInput,
+        newPassword: newPasswordInput,
+      });
+
+      setOtpStatus({
+        type: 'success',
+        msg: 'Password reset successfully! Account unlocked. You can now sign in.',
+      });
+
+      setLoginData({
+        email: forgotEmail,
+        password: newPasswordInput,
+      });
+
+      setTimeout(() => {
+        setIsForgotModalOpen(false);
+        setOtpStatus(null);
+      }, 1500);
+    } catch (err) {
+      setOtpStatus({ type: 'error', msg: err.message });
+    } finally {
+      setLoadingOtp(false);
+    }
   };
 
   return (
@@ -185,7 +248,16 @@ export default function AuthPage({ onLoginSuccess }) {
             </div>
 
             <div className="form-group">
-              <label>Password</label>
+              <div className="flex-between">
+                <label>Password</label>
+                <button
+                  type="button"
+                  className="btn-link-sm text-white font-bold"
+                  onClick={() => { setIsForgotModalOpen(true); setOtpStep(1); setOtpStatus(null); }}
+                >
+                  <HelpCircle size={13} /> Forgot Password? (OTP)
+                </button>
+              </div>
               <div className="input-icon-wrapper">
                 <Lock size={18} className="input-icon" />
                 <input
@@ -298,6 +370,80 @@ export default function AuthPage({ onLoginSuccess }) {
           <span>Protected by NestJS JWT Strategy & PostgreSQL Database &bull; Port 3000</span>
         </div>
       </div>
+
+      {/* Forgot Password OTP Modal */}
+      {isForgotModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <button className="modal-close" onClick={() => setIsForgotModalOpen(false)}>&times;</button>
+            <div className="modal-header-title">
+              <Key className="text-cyan" size={24} />
+              <div>
+                <h3>Reset Account Password (OTP System)</h3>
+                <p>Generate a 6-digit security OTP code stored in PostgreSQL.</p>
+              </div>
+            </div>
+
+            {otpStep === 1 ? (
+              <form onSubmit={handleRequestOtp}>
+                <div className="form-group mb-3">
+                  <label>Registered Work Email Address</label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="user.postgres@example.com"
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                  />
+                </div>
+
+                <button type="submit" className="btn btn-primary btn-block mb-3" disabled={loadingOtp}>
+                  {loadingOtp ? 'Generating OTP...' : 'Request Password Reset OTP'}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleResetPassword}>
+                <div className="form-group mb-3">
+                  <label>Generated 6-Digit OTP Code</label>
+                  <input
+                    type="text"
+                    required
+                    maxLength={6}
+                    placeholder="e.g. 849201"
+                    value={otpCodeInput}
+                    onChange={(e) => setOtpCodeInput(e.target.value)}
+                  />
+                </div>
+
+                <div className="form-group mb-3">
+                  <label>New Password</label>
+                  <input
+                    type="password"
+                    required
+                    minLength={6}
+                    placeholder="Enter new password"
+                    value={newPasswordInput}
+                    onChange={(e) => setNewPasswordInput(e.target.value)}
+                  />
+                </div>
+
+                <button type="submit" className="btn btn-emerald btn-block mb-3" disabled={loadingOtp}>
+                  <Key size={16} /> {loadingOtp ? 'Resetting Password...' : 'Reset Password & Unlock Account'}
+                </button>
+              </form>
+            )}
+
+            {otpStatus && (
+              <div className={`alert alert-${otpStatus.type} mb-3`}>
+                {otpStatus.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+                <div>
+                  <p>{otpStatus.msg}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

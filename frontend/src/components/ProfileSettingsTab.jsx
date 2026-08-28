@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { User, Camera, Check, CheckCircle2, AlertCircle } from 'lucide-react';
+import { api } from '../services/api';
+import { User, Camera, Check, CheckCircle2, AlertCircle, Trash2, Key } from 'lucide-react';
 
 const PRESET_AVATARS = [
   'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150&auto=format&fit=crop&q=80',
@@ -22,6 +23,15 @@ export default function ProfileSettingsTab({ currentUser, onUpdateUser }) {
   });
 
   const [saveStatus, setSaveStatus] = useState(null);
+
+  // Password Change State
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [passwordStatus, setPasswordStatus] = useState(null);
+  const [loadingPass, setLoadingPass] = useState(false);
 
   useEffect(() => {
     if (currentUser) {
@@ -58,6 +68,21 @@ export default function ProfileSettingsTab({ currentUser, onUpdateUser }) {
     }
   };
 
+  const handleRemoveAvatar = () => {
+    if (currentUser?.email) {
+      localStorage.removeItem(`carepulse_avatar_${currentUser.email}`);
+    }
+    const defaultAvatar = PRESET_AVATARS[0];
+    setProfileData((prev) => ({ ...prev, avatar: defaultAvatar }));
+    if (onUpdateUser) {
+      onUpdateUser({ ...currentUser, ...profileData, avatar: defaultAvatar });
+    }
+    setSaveStatus({
+      type: 'success',
+      msg: 'Custom avatar photo deleted. Reset to default preset photo.',
+    });
+  };
+
   const handleSelectPreset = (url) => {
     setProfileData((prev) => ({ ...prev, avatar: url }));
     if (onUpdateUser) {
@@ -86,30 +111,69 @@ export default function ProfileSettingsTab({ currentUser, onUpdateUser }) {
     }, 300);
   };
 
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    setPasswordStatus(null);
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordStatus({ type: 'error', msg: 'New password and confirm password do not match.' });
+      return;
+    }
+
+    setLoadingPass(true);
+    setPasswordStatus({ type: 'info', msg: 'Updating account password in PostgreSQL...' });
+    try {
+      await api.changePassword({
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
+      });
+
+      setPasswordStatus({
+        type: 'success',
+        msg: 'Account password changed successfully in PostgreSQL!',
+      });
+      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (err) {
+      setPasswordStatus({ type: 'error', msg: err.message });
+    } finally {
+      setLoadingPass(false);
+    }
+  };
+
   return (
     <div className="tab-container">
       <div className="tab-header">
         <h2><User className="icon-header text-purple" /> User Profile & Avatar Settings</h2>
-        <p className="subtitle">Manage your physician avatar photo and personal staff details.</p>
+        <p className="subtitle">Manage your physician avatar photo, personal details, and account credentials.</p>
       </div>
 
       <div className="form-card-container">
-        <div className="card">
+        {/* Personal Details Card */}
+        <div className="card mb-4">
           <div className="card-header mb-2">
             <User className="card-icon text-purple" />
             <h3>Personal & Medical Staff Info</h3>
           </div>
 
           <form onSubmit={handleSave}>
-            {/* Avatar Section with Camera Badge Moved to Right */}
+            {/* Avatar Section with Delete Avatar Option */}
             <div className="avatar-preview-section mb-4">
               <div className="avatar-circle-with-btn">
                 <img src={profileData.avatar} alt="Profile avatar" className="avatar-main-img" />
-                <label className="upload-badge-pill" title="Upload custom photo">
-                  <Camera size={15} />
-                  <span>Upload Photo</span>
-                  <input type="file" accept="image/*" onChange={handleFileUpload} hidden />
-                </label>
+                <div className="flex-align gap-2">
+                  <label className="upload-badge-pill" title="Upload custom photo">
+                    <Camera size={15} />
+                    <span>Upload Photo</span>
+                    <input type="file" accept="image/*" onChange={handleFileUpload} hidden />
+                  </label>
+                  <button
+                    type="button"
+                    className="btn btn-outline btn-sm text-danger"
+                    onClick={handleRemoveAvatar}
+                    title="Delete custom photo"
+                  >
+                    <Trash2 size={15} /> Delete Avatar
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -197,6 +261,64 @@ export default function ProfileSettingsTab({ currentUser, onUpdateUser }) {
               <div className={`alert alert-${saveStatus.type} mt-3`}>
                 {saveStatus.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
                 <span>{saveStatus.msg}</span>
+              </div>
+            )}
+          </form>
+        </div>
+
+        {/* Account Password Change Card */}
+        <div className="card">
+          <div className="card-header mb-2">
+            <Key className="card-icon text-cyan" />
+            <h3>Change Account Password</h3>
+          </div>
+          <p className="card-desc">Update your login security credentials in PostgreSQL database.</p>
+
+          <form onSubmit={handlePasswordSubmit}>
+            <div className="form-group mb-3">
+              <label>Current Password</label>
+              <input
+                type="password"
+                required
+                placeholder="Enter current password"
+                value={passwordData.currentPassword}
+                onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+              />
+            </div>
+
+            <div className="form-row spacious-row">
+              <div className="form-group mb-3">
+                <label>New Password</label>
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  placeholder="Minimum 6 characters"
+                  value={passwordData.newPassword}
+                  onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                />
+              </div>
+              <div className="form-group mb-3">
+                <label>Confirm New Password</label>
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  placeholder="Re-enter new password"
+                  value={passwordData.confirmPassword}
+                  onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <button type="submit" className="btn btn-emerald btn-lg" disabled={loadingPass}>
+              <Key size={16} /> {loadingPass ? 'Updating Password...' : 'Update Password'}
+            </button>
+
+            {passwordStatus && (
+              <div className={`alert alert-${passwordStatus.type} mt-3`}>
+                {passwordStatus.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+                <span>{passwordStatus.msg}</span>
               </div>
             )}
           </form>
