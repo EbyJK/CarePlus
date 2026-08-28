@@ -18,7 +18,7 @@ async function seed() {
     database: process.env.DB_NAME || 'nest_modules',
     entities: [User, SmsLog, UserAccount, UserAuditAction, UserOtp],
     synchronize: true,
-    logging: true,
+    logging: false,
   });
 
   await dataSource.initialize();
@@ -28,7 +28,32 @@ async function seed() {
   const auditRepo = dataSource.getRepository(UserAuditAction);
   const userRepo = dataSource.getRepository(User);
 
-  // Check if admin already exists
+  // 1. Seed Superadmin Account
+  const existingSuperadmin = await userAccRepo.findOne({ where: { email: 'superadmin.postgres@example.com' } });
+  if (!existingSuperadmin) {
+    const passwordHash = await bcrypt.hash('SuperPassword123!', 10);
+    const superadmin = userAccRepo.create({
+      email: 'superadmin.postgres@example.com',
+      firstName: 'Chief',
+      lastName: 'Superadmin',
+      phoneNumber: '+14155551111',
+      passwordHash,
+      role: UserManagementRole.SUPERADMIN,
+      isActive: true,
+      isVerified: true,
+    });
+    const savedSuper = await userAccRepo.save(superadmin);
+    console.log('✅ Created Superadmin in user_management_accounts:', savedSuper.email, '(ID:', savedSuper.id, ')');
+
+    await auditRepo.save({
+      userAccount: savedSuper,
+      action: 'SUPERADMIN_INITIALIZED',
+      description: `Superadmin account initialized for ${savedSuper.email}`,
+      metadata: { role: savedSuper.role },
+    });
+  }
+
+  // 2. Seed Admin Account
   const existingAdmin = await userAccRepo.findOne({ where: { email: 'admin.postgres@example.com' } });
   if (!existingAdmin) {
     const passwordHash = await bcrypt.hash('AdminPassword123!', 10);
@@ -53,6 +78,7 @@ async function seed() {
     });
   }
 
+  // 3. Seed Regular User Account
   const existingUser = await userAccRepo.findOne({ where: { email: 'user.postgres@example.com' } });
   if (!existingUser) {
     const passwordHash = await bcrypt.hash('UserPassword123!', 10);
@@ -77,32 +103,10 @@ async function seed() {
     });
   }
 
-  const existingStandard = await userRepo.findOne({ where: { email: 'standard.postgres@example.com' } });
-  if (!existingStandard) {
-    const hashedPassword = await bcrypt.hash('StandardPassword123!', 10);
-    const stdUser = userRepo.create({
-      email: 'standard.postgres@example.com',
-      password: hashedPassword,
-      firstName: 'Standard',
-      lastName: 'Admin',
-      role: 'ADMIN' as any,
-    });
-    const savedStd = await userRepo.save(stdUser);
-    console.log('✅ Created Admin in users table:', savedStd.email, '(ID:', savedStd.id, ')');
-  }
-
   console.log('\n--- PostgreSQL Verification Summary ---');
   const accounts = await userAccRepo.find();
   console.log(`user_management_accounts count: ${accounts.length}`);
   console.table(accounts.map(a => ({ id: a.id, email: a.email, role: a.role, firstName: a.firstName, lastName: a.lastName })));
-
-  const users = await userRepo.find();
-  console.log(`users count: ${users.length}`);
-  console.table(users.map(u => ({ id: u.id, email: u.email, role: u.role, firstName: u.firstName, lastName: u.lastName })));
-
-  const auditLogs = await auditRepo.find();
-  console.log(`user_audit_actions count: ${auditLogs.length}`);
-  console.table(auditLogs.map(l => ({ id: l.id, action: l.action, description: l.description })));
 
   await dataSource.destroy();
 }

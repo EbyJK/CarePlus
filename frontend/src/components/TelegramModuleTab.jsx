@@ -1,20 +1,32 @@
 import React, { useState } from 'react';
 import { api } from '../services/api';
-import { Send, Image, CheckCircle2, AlertCircle, Radio } from 'lucide-react';
+import { Radio, Send, Image, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
+
+const BROADCAST_PRESETS = [
+  {
+    title: 'Emergency Medical Shift Notice',
+    html: '🚨 <b>CAREPULSE URGENT ALERT</b>\n\nAll Cardiology on-call physicians please check in with the central ICU desk immediately.',
+  },
+  {
+    title: 'Clinical System Maintenance',
+    html: 'ℹ️ <b>CarePulse Maintenance Window</b>\n\nRoutine database updates scheduled for tonight at 02:00 UTC. Systems will remain 99.9% operational.',
+  },
+];
 
 export default function TelegramModuleTab() {
   const [textData, setTextData] = useState({
     channelId: '-1003991919897',
-    message: '🔥 <b>Announcement</b>: New update published from Standalone Modules Dashboard!',
+    message: BROADCAST_PRESETS[0].html,
     parseMode: 'HTML',
   });
 
   const [photoData, setPhotoData] = useState({
     channelId: '-1003991919897',
-    photoUrl: 'https://picsum.photos/800/600',
-    caption: '📸 Image Broadcast from Standalone Modules Dashboard',
+    photoUrl: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800&auto=format&fit=crop&q=80',
+    caption: '🏥 <b>CarePulse Health Facility Bulletin</b>\nNew ICU ward extension opened for emergency cardiology patients.',
   });
 
+  const [activeSubTab, setActiveSubTab] = useState('text');
   const [textStatus, setTextStatus] = useState(null);
   const [photoStatus, setPhotoStatus] = useState(null);
   const [loadingText, setLoadingText] = useState(false);
@@ -23,12 +35,12 @@ export default function TelegramModuleTab() {
   const handleBroadcastText = async (e) => {
     e.preventDefault();
     setLoadingText(true);
-    setTextStatus({ type: 'info', msg: 'Broadcasting text to Telegram channel...' });
+    setTextStatus({ type: 'info', msg: 'Broadcasting alert to Telegram channel...' });
     try {
       const res = await api.broadcastTelegram(textData);
       setTextStatus({
         type: 'success',
-        msg: 'Telegram Broadcast Sent Successfully!',
+        msg: 'Telegram Emergency Channel Broadcast Sent Successfully!',
         data: res,
       });
     } catch (err) {
@@ -41,7 +53,7 @@ export default function TelegramModuleTab() {
   const handleSendPhoto = async (e) => {
     e.preventDefault();
     setLoadingPhoto(true);
-    setPhotoStatus({ type: 'info', msg: 'Sending photo to Telegram channel...' });
+    setPhotoStatus({ type: 'info', msg: 'Sending photo broadcast to Telegram channel...' });
     try {
       const res = await api.sendTelegramPhoto(photoData);
       setPhotoStatus({
@@ -59,118 +71,147 @@ export default function TelegramModuleTab() {
   return (
     <div className="tab-container">
       <div className="tab-header">
-        <h2><Radio className="icon-header text-blue" /> Telegram Channel Module</h2>
-        <p className="subtitle">Broadcast text announcements and media directly to your configured Telegram channel.</p>
+        <h2><Radio className="icon-header text-blue" /> Telegram Broadcast Center</h2>
+        <p className="subtitle">Broadcast formatted emergency notifications and clinical media directly to Telegram channel (Bot API).</p>
       </div>
 
-      <div className="forms-grid">
-        {/* Broadcast Text Message */}
+      <div className="form-card-container">
         <div className="card">
-          <div className="card-header">
-            <Send className="card-icon text-blue" />
-            <h3>1. Broadcast Channel Text Message</h3>
-          </div>
-          <form onSubmit={handleBroadcastText}>
-            <div className="form-group">
-              <label>Telegram Channel ID</label>
-              <input
-                type="text"
-                required
-                placeholder="-1003991919897"
-                value={textData.channelId}
-                onChange={(e) => setTextData({ ...textData, channelId: e.target.value })}
-              />
-            </div>
-            <div className="form-group">
-              <label>Parse Mode</label>
-              <select
-                value={textData.parseMode}
-                onChange={(e) => setTextData({ ...textData, parseMode: e.target.value })}
-              >
-                <option value="HTML">HTML</option>
-                <option value="MarkdownV2">MarkdownV2</option>
-                <option value="Markdown">Markdown</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Message Content</label>
-              <textarea
-                rows={4}
-                required
-                placeholder="Type HTML formatted message..."
-                value={textData.message}
-                onChange={(e) => setTextData({ ...textData, message: e.target.value })}
-              ></textarea>
-            </div>
-            <button type="submit" className="btn btn-blue" disabled={loadingText}>
-              {loadingText ? 'Broadcasting...' : 'Broadcast Text Message'}
+          <div className="card-subtabs mb-3">
+            <button
+              className={`btn btn-sm ${activeSubTab === 'text' ? 'btn-blue' : 'btn-outline'}`}
+              onClick={() => setActiveSubTab('text')}
+            >
+              <Send size={15} /> Text Announcement
             </button>
-          </form>
-
-          {textStatus && (
-            <div className={`alert alert-${textStatus.type}`}>
-              {textStatus.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
-              <div>
-                <p>{textStatus.msg}</p>
-                {textStatus.data && (
-                  <pre className="json-preview">{JSON.stringify(textStatus.data, null, 2)}</pre>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Send Photo Message */}
-        <div className="card">
-          <div className="card-header">
-            <Image className="card-icon text-indigo" />
-            <h3>2. Send Photo to Channel</h3>
-          </div>
-          <form onSubmit={handleSendPhoto}>
-            <div className="form-group">
-              <label>Telegram Channel ID</label>
-              <input
-                type="text"
-                required
-                placeholder="-1003991919897"
-                value={photoData.channelId}
-                onChange={(e) => setPhotoData({ ...photoData, channelId: e.target.value })}
-              />
-            </div>
-            <div className="form-group">
-              <label>Photo Public URL</label>
-              <input
-                type="url"
-                required
-                placeholder="https://example.com/image.jpg"
-                value={photoData.photoUrl}
-                onChange={(e) => setPhotoData({ ...photoData, photoUrl: e.target.value })}
-              />
-            </div>
-            <div className="form-group">
-              <label>Photo Caption</label>
-              <textarea
-                rows={3}
-                placeholder="Image caption text..."
-                value={photoData.caption}
-                onChange={(e) => setPhotoData({ ...photoData, caption: e.target.value })}
-              ></textarea>
-            </div>
-            <button type="submit" className="btn btn-indigo" disabled={loadingPhoto}>
-              {loadingPhoto ? 'Sending...' : 'Send Photo Broadcast'}
+            <button
+              className={`btn btn-sm ${activeSubTab === 'photo' ? 'btn-blue' : 'btn-outline'}`}
+              onClick={() => setActiveSubTab('photo')}
+            >
+              <Image size={15} /> Photo Broadcast
             </button>
-          </form>
+          </div>
 
-          {photoStatus && (
-            <div className={`alert alert-${photoStatus.type}`}>
-              {photoStatus.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
-              <div>
-                <p>{photoStatus.msg}</p>
-                {photoStatus.data && (
-                  <pre className="json-preview">{JSON.stringify(photoStatus.data, null, 2)}</pre>
-                )}
+          {activeSubTab === 'text' ? (
+            <form onSubmit={handleBroadcastText}>
+              <div className="form-group mb-3">
+                <label>Telegram Channel ID</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="-1003991919897"
+                  value={textData.channelId}
+                  onChange={(e) => setTextData({ ...textData, channelId: e.target.value })}
+                />
               </div>
-            </div>
+
+              <div className="template-picker mb-3">
+                <span className="template-label"><Sparkles size={14} className="text-amber" /> Presets:</span>
+                <div className="template-buttons">
+                  {BROADCAST_PRESETS.map((p, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      className="btn btn-outline btn-sm"
+                      onClick={() => setTextData({ ...textData, message: p.html })}
+                    >
+                      {p.title}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="form-group mb-3">
+                <label>Parse Mode</label>
+                <select
+                  value={textData.parseMode}
+                  onChange={(e) => setTextData({ ...textData, parseMode: e.target.value })}
+                >
+                  <option value="HTML">HTML (Recommended)</option>
+                  <option value="MarkdownV2">MarkdownV2</option>
+                  <option value="Markdown">Markdown</option>
+                </select>
+              </div>
+
+              <div className="form-group mb-4">
+                <label>Message Content (HTML Supported)</label>
+                <textarea
+                  rows={6}
+                  required
+                  className="full-textarea"
+                  placeholder="Type HTML formatted announcement..."
+                  value={textData.message}
+                  onChange={(e) => setTextData({ ...textData, message: e.target.value })}
+                ></textarea>
+              </div>
+
+              <button type="submit" className="btn btn-blue btn-lg" disabled={loadingText}>
+                <Send size={16} /> {loadingText ? 'Broadcasting...' : 'Broadcast Text Announcement'}
+              </button>
+
+              {textStatus && (
+                <div className={`alert alert-${textStatus.type} mt-4`}>
+                  {textStatus.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+                  <div>
+                    <p>{textStatus.msg}</p>
+                    {textStatus.data && (
+                      <pre className="json-preview">{JSON.stringify(textStatus.data, null, 2)}</pre>
+                    )}
+                  </div>
+                </div>
+              )}
+            </form>
+          ) : (
+            <form onSubmit={handleSendPhoto}>
+              <div className="form-group mb-3">
+                <label>Telegram Channel ID</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="-1003991919897"
+                  value={photoData.channelId}
+                  onChange={(e) => setPhotoData({ ...photoData, channelId: e.target.value })}
+                />
+              </div>
+
+              <div className="form-group mb-3">
+                <label>Media Photo URL</label>
+                <input
+                  type="url"
+                  required
+                  placeholder="https://images.unsplash.com/..."
+                  value={photoData.photoUrl}
+                  onChange={(e) => setPhotoData({ ...photoData, photoUrl: e.target.value })}
+                />
+              </div>
+
+              <div className="form-group mb-4">
+                <label>Photo Caption Text</label>
+                <textarea
+                  rows={4}
+                  className="full-textarea"
+                  placeholder="Image caption text..."
+                  value={photoData.caption}
+                  onChange={(e) => setPhotoData({ ...photoData, caption: e.target.value })}
+                ></textarea>
+              </div>
+
+              <button type="submit" className="btn btn-indigo btn-lg" disabled={loadingPhoto}>
+                <Image size={16} /> {loadingPhoto ? 'Sending Photo...' : 'Broadcast Photo Update'}
+              </button>
+
+              {photoStatus && (
+                <div className={`alert alert-${photoStatus.type} mt-4`}>
+                  {photoStatus.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+                  <div>
+                    <p>{photoStatus.msg}</p>
+                    {photoStatus.data && (
+                      <pre className="json-preview">{JSON.stringify(photoStatus.data, null, 2)}</pre>
+                    )}
+                  </div>
+                </div>
+              )}
+            </form>
           )}
         </div>
       </div>

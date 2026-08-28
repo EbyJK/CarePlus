@@ -1,87 +1,109 @@
-import React, { useState } from 'react';
-import UserManagementTab from './components/UserManagementTab';
-import SmsModuleTab from './components/SmsModuleTab';
-import TelegramModuleTab from './components/TelegramModuleTab';
-import { Users, MessageSquare, Radio, Shield, Database, LayoutDashboard } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import AuthPage from './components/AuthPage';
+import AdminWorkspace from './components/AdminWorkspace';
+import StaffWorkspace from './components/StaffWorkspace';
+import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('users');
+  const [currentUser, setCurrentUser] = useState(() => {
+    const savedUser = localStorage.getItem('carepulse_auth_user');
+    const token = localStorage.getItem('jwt_token');
+    if (savedUser && token) {
+      try {
+        const parsed = JSON.parse(savedUser);
+        if (parsed?.email) {
+          const storedAvatar = localStorage.getItem(`carepulse_avatar_${parsed.email}`);
+          if (storedAvatar) {
+            parsed.avatar = storedAvatar;
+          }
+        }
+        return parsed;
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  });
 
+  useEffect(() => {
+    if (currentUser) {
+      if (currentUser.email && currentUser.avatar) {
+        localStorage.setItem(`carepulse_avatar_${currentUser.email}`, currentUser.avatar);
+      }
+      localStorage.setItem('carepulse_auth_user', JSON.stringify(currentUser));
+    } else {
+      localStorage.removeItem('carepulse_auth_user');
+      localStorage.removeItem('jwt_token');
+    }
+  }, [currentUser]);
+
+  const handleLoginSuccess = (user, token) => {
+    localStorage.setItem('jwt_token', token);
+    const userEmail = user?.email;
+    const storedAvatar = userEmail ? localStorage.getItem(`carepulse_avatar_${userEmail}`) : null;
+    const userWithAvatar = {
+      ...user,
+      avatar: storedAvatar || user.avatar,
+    };
+    setCurrentUser(userWithAvatar);
+  };
+
+  const handleUpdateUser = (updatedUser) => {
+    setCurrentUser((prev) => {
+      const nextUser = { ...prev, ...updatedUser };
+      if (nextUser.email && nextUser.avatar) {
+        localStorage.setItem(`carepulse_avatar_${nextUser.email}`, nextUser.avatar);
+      }
+      localStorage.setItem('carepulse_auth_user', JSON.stringify(nextUser));
+      return nextUser;
+    });
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('jwt_token');
+    localStorage.removeItem('carepulse_auth_user');
+    setCurrentUser(null);
+  };
+
+  // If unauthenticated: Render Production Auth Screen
+  if (!currentUser) {
+    return <AuthPage onLoginSuccess={handleLoginSuccess} />;
+  }
+
+  // Evaluate verified role from backend JWT session
+  const userRole = (currentUser.role || 'user').toLowerCase();
+  const isAdmin = userRole === 'admin' || userRole === 'superadmin';
+
+  // AUTOMATIC REDIRECTION TO DEDICATED ROLE WORKSPACES
+  if (isAdmin) {
+    return (
+      <ProtectedRoute
+        user={currentUser}
+        allowedRoles={['admin', 'superadmin']}
+        onFallbackRedirect={handleLogout}
+      >
+        <AdminWorkspace
+          user={currentUser}
+          onLogout={handleLogout}
+          onUpdateUser={handleUpdateUser}
+        />
+      </ProtectedRoute>
+    );
+  }
+
+  // Standard User / Staff Portal Workspace
   return (
-    <div className="app-layout">
-      {/* Sidebar Navigation */}
-      <aside className="sidebar">
-        <div className="brand">
-          <div className="brand-logo">
-            <LayoutDashboard size={24} />
-          </div>
-          <div>
-            <h1 className="brand-title">Standalone Modules</h1>
-            <span className="brand-badge">PostgreSQL Powered</span>
-          </div>
-        </div>
-
-        <nav className="nav-menu">
-          <button
-            className={`nav-item ${activeTab === 'users' ? 'active' : ''}`}
-            onClick={() => setActiveTab('users')}
-          >
-            <Users size={18} />
-            <span>User Management</span>
-          </button>
-          <button
-            className={`nav-item ${activeTab === 'sms' ? 'active' : ''}`}
-            onClick={() => setActiveTab('sms')}
-          >
-            <MessageSquare size={18} />
-            <span>SMS Module</span>
-          </button>
-          <button
-            className={`nav-item ${activeTab === 'telegram' ? 'active' : ''}`}
-            onClick={() => setActiveTab('telegram')}
-          >
-            <Radio size={18} />
-            <span>Telegram Channel</span>
-          </button>
-        </nav>
-
-        <div className="sidebar-footer">
-          <div className="db-indicator">
-            <Database size={16} className="text-cyan" />
-            <span>DB: <code>nest_modules</code> (Postgres)</span>
-          </div>
-          <div className="status-live">
-            <span className="live-dot"></span> Backend API: <code>http://localhost:3000</code>
-          </div>
-        </div>
-      </aside>
-
-      {/* Main Content Area */}
-      <main className="main-content">
-        <header className="topbar">
-          <div className="topbar-title">
-            <Shield className="text-cyan" size={20} />
-            <span>Standalone Modules Control Panel</span>
-          </div>
-          <div className="topbar-right">
-            <a
-              href="http://localhost:3000/docs"
-              target="_blank"
-              rel="noreferrer"
-              className="swagger-link"
-            >
-              📚 Open Swagger API Docs
-            </a>
-          </div>
-        </header>
-
-        <div className="content-body">
-          {activeTab === 'users' && <UserManagementTab />}
-          {activeTab === 'sms' && <SmsModuleTab />}
-          {activeTab === 'telegram' && <TelegramModuleTab />}
-        </div>
-      </main>
-    </div>
+    <ProtectedRoute
+      user={currentUser}
+      allowedRoles={['user', 'supervisor']}
+      onFallbackRedirect={handleLogout}
+    >
+      <StaffWorkspace
+        user={currentUser}
+        onLogout={handleLogout}
+        onUpdateUser={handleUpdateUser}
+      />
+    </ProtectedRoute>
   );
 }

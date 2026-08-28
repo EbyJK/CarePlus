@@ -1,44 +1,42 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { api } from '../services/api';
-import { MessageSquare, Send, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
+import { MessageSquare, Send, CheckCircle2, AlertCircle, Smartphone, Sparkles } from 'lucide-react';
+
+const SMS_TEMPLATES = [
+  {
+    name: 'Prescription Ready',
+    text: 'CarePulse Health: Your prescription #RX-9482 is ready for pickup at the main medical pharmacy.',
+  },
+  {
+    name: 'Appointment Reminder',
+    text: 'CarePulse Alert: Your consultation with Dr. Jenkins is scheduled for tomorrow at 10:00 AM.',
+  },
+  {
+    name: 'Emergency Health Alert',
+    text: 'CarePulse Urgent: Please review your patient health portal for urgent lab result updates.',
+  },
+];
 
 export default function SmsModuleTab() {
   const [smsData, setSmsData] = useState({
     toPhoneNumber: '+14155552671',
-    message: 'Hello! This is a test message from our Standalone Modules Dashboard.',
+    message: SMS_TEMPLATES[0].text,
   });
 
-  const [logs, setLogs] = useState([]);
   const [sendResult, setSendResult] = useState(null);
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    fetchLogs();
-  }, []);
-
-  const fetchLogs = async () => {
-    try {
-      const data = await api.getSmsLogs();
-      if (Array.isArray(data)) {
-        setLogs(data);
-      }
-    } catch (err) {
-      console.log('Failed to fetch SMS logs:', err.message);
-    }
-  };
 
   const handleSendSms = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setSendResult({ type: 'info', msg: 'Dispatching SMS...' });
+    setSendResult({ type: 'info', msg: 'Dispatching Patient SMS notification...' });
     try {
       const res = await api.sendSms(smsData);
       setSendResult({
         type: 'success',
-        msg: `SMS Sent successfully! Status: ${res.status || 'SENT'}, Provider: ${res.provider || 'mock'}`,
+        msg: `Patient SMS Sent Successfully! Status: ${res.status || 'SENT'}`,
         data: res,
       });
-      fetchLogs();
     } catch (err) {
       setSendResult({ type: 'error', msg: err.message });
     } finally {
@@ -46,48 +44,76 @@ export default function SmsModuleTab() {
     }
   };
 
+  const applyTemplate = (tpl) => {
+    setSmsData((prev) => ({ ...prev, message: tpl.text }));
+  };
+
   return (
     <div className="tab-container">
       <div className="tab-header">
-        <h2><MessageSquare className="icon-header text-emerald" /> SMS Dispatch Module</h2>
-        <p className="subtitle">Send SMS notifications to mobile numbers and view real-time log records in PostgreSQL (<code>sms_logs</code> table).</p>
+        <h2><MessageSquare className="icon-header text-emerald" /> Patient SMS Dispatch Center</h2>
+        <p className="subtitle">Dispatch direct SMS patient notifications for prescription pickups and emergency appointments.</p>
       </div>
 
-      <div className="forms-grid">
-        {/* Send SMS Form */}
+      <div className="form-card-container">
         <div className="card">
-          <div className="card-header">
+          <div className="card-header mb-2">
             <Send className="card-icon text-emerald" />
-            <h3>Send SMS Message</h3>
+            <h3>Compose Patient Notification</h3>
           </div>
-          <form onSubmit={handleSendSms}>
-            <div className="form-group">
-              <label>Destination Mobile Phone Number</label>
-              <input
-                type="text"
-                required
-                placeholder="+14155552671"
-                value={smsData.toPhoneNumber}
-                onChange={(e) => setSmsData({ ...smsData, toPhoneNumber: e.target.value })}
-              />
+
+          {/* Template Bar */}
+          <div className="template-picker mb-3">
+            <span className="template-label"><Sparkles size={14} className="text-amber" /> Quick Templates:</span>
+            <div className="template-buttons">
+              {SMS_TEMPLATES.map((tpl, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  className="btn btn-outline btn-sm"
+                  onClick={() => applyTemplate(tpl)}
+                >
+                  {tpl.name}
+                </button>
+              ))}
             </div>
-            <div className="form-group">
-              <label>Message Content</label>
+          </div>
+
+          <form onSubmit={handleSendSms}>
+            <div className="form-group mb-4">
+              <label>Recipient Mobile Phone Number (E.164 Format)</label>
+              <div className="phone-input-wrapper">
+                <Smartphone size={18} className="phone-icon" />
+                <input
+                  type="text"
+                  required
+                  placeholder="+14155552671"
+                  value={smsData.toPhoneNumber}
+                  onChange={(e) => setSmsData({ ...smsData, toPhoneNumber: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="form-group mb-4">
+              <label>SMS Message Content</label>
               <textarea
-                rows={4}
+                rows={5}
                 required
-                placeholder="Type your SMS message here..."
+                className="full-textarea"
+                placeholder="Type your SMS message..."
                 value={smsData.message}
                 onChange={(e) => setSmsData({ ...smsData, message: e.target.value })}
               ></textarea>
+              <small className="char-count">{smsData.message.length} / 160 characters</small>
             </div>
-            <button type="submit" className="btn btn-emerald" disabled={loading}>
-              {loading ? 'Sending...' : 'Send SMS Now'}
+
+            <button type="submit" className="btn btn-emerald btn-lg" disabled={loading}>
+              <Send size={16} /> {loading ? 'Dispatching SMS...' : 'Send Patient SMS Now'}
             </button>
           </form>
 
           {sendResult && (
-            <div className={`alert alert-${sendResult.type}`}>
+            <div className={`alert alert-${sendResult.type} mt-4`}>
               {sendResult.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
               <div>
                 <p>{sendResult.msg}</p>
@@ -95,49 +121,6 @@ export default function SmsModuleTab() {
                   <pre className="json-preview">{JSON.stringify(sendResult.data, null, 2)}</pre>
                 )}
               </div>
-            </div>
-          )}
-        </div>
-
-        {/* SMS Logs Live View */}
-        <div className="card table-card">
-          <div className="card-header">
-            <h3>SMS Logs History in PostgreSQL (<code>sms_logs</code>)</h3>
-            <button onClick={fetchLogs} className="btn btn-sm btn-outline">
-              <RefreshCw size={14} /> Refresh Logs
-            </button>
-          </div>
-
-          {logs.length === 0 ? (
-            <p className="empty-text">No SMS logs recorded yet. Send a test SMS to populate rows!</p>
-          ) : (
-            <div className="table-responsive">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Recipient</th>
-                    <th>Message</th>
-                    <th>Status</th>
-                    <th>Provider</th>
-                    <th>Sent At</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {logs.map((log) => (
-                    <tr key={log.id || log.createdAt}>
-                      <td>{log.toPhoneNumber}</td>
-                      <td className="msg-cell">{log.message}</td>
-                      <td>
-                        <span className="badge badge-emerald">
-                          {log.status || 'SENT'}
-                        </span>
-                      </td>
-                      <td><code>{log.provider || 'mock'}</code></td>
-                      <td>{new Date(log.createdAt || Date.now()).toLocaleString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
             </div>
           )}
         </div>
