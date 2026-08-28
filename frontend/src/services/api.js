@@ -58,7 +58,10 @@ export const api = {
   sendSms: (smsData) =>
     request('/sms/send', {
       method: 'POST',
-      body: JSON.stringify(smsData),
+      body: JSON.stringify({
+        to: smsData.to || smsData.toPhoneNumber,
+        message: smsData.message,
+      }),
     }),
 
   getSmsLogs: () => request('/sms/logs'),

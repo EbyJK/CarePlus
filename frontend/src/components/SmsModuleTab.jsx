@@ -4,12 +4,12 @@ import { MessageSquare, Send, CheckCircle2, AlertCircle, Smartphone, Sparkles } 
 
 const SMS_TEMPLATES = [
   {
-    name: 'Prescription Ready',
-    text: 'CarePulse Health: Your prescription #RX-9482 is ready for pickup at the main medical pharmacy.',
+    name: 'Twilio Trial Template',
+    text: 'Reminder: Appt Tue Oct 29, 3:00 PM. Reply C to confirm or R to reschedule. Test message from Twilio.',
   },
   {
-    name: 'Appointment Reminder',
-    text: 'CarePulse Alert: Your consultation with Dr. Jenkins is scheduled for tomorrow at 10:00 AM.',
+    name: 'Prescription Ready',
+    text: 'CarePulse Health: Your prescription #RX-9482 is ready for pickup at the main medical pharmacy.',
   },
   {
     name: 'Emergency Health Alert',
@@ -19,7 +19,7 @@ const SMS_TEMPLATES = [
 
 export default function SmsModuleTab() {
   const [smsData, setSmsData] = useState({
-    toPhoneNumber: '+14155552671',
+    to: '+918590651189',
     message: SMS_TEMPLATES[0].text,
   });
 
@@ -29,12 +29,20 @@ export default function SmsModuleTab() {
   const handleSendSms = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setSendResult({ type: 'info', msg: 'Dispatching Patient SMS notification...' });
+    setSendResult({ type: 'info', msg: 'Dispatching Patient SMS notification via Twilio Gateway...' });
     try {
-      const res = await api.sendSms(smsData);
+      const res = await api.sendSms({
+        to: smsData.to,
+        message: smsData.message,
+      });
+      
+      const isSent = res.status === 'SENT' || res.providerMessageId || !res.errorMessage;
+
       setSendResult({
-        type: 'success',
-        msg: `Patient SMS Sent Successfully! Status: ${res.status || 'SENT'}`,
+        type: isSent ? 'success' : 'error',
+        msg: isSent 
+          ? `Patient SMS Sent Successfully! Provider: ${res.provider?.toUpperCase() || 'TWILIO'} | ID: ${res.providerMessageId || res.id || 'SENT'}`
+          : `SMS Dispatch Status: ${res.status || 'FAILED'} — ${res.errorMessage || 'Unknown error'}`,
         data: res,
       });
     } catch (err) {
@@ -81,17 +89,20 @@ export default function SmsModuleTab() {
 
           <form onSubmit={handleSendSms}>
             <div className="form-group mb-4">
-              <label>Recipient Mobile Phone Number (E.164 Format)</label>
+              <label>Recipient Mobile Phone Number (E.164 International Format)</label>
               <div className="phone-input-wrapper">
                 <Smartphone size={18} className="phone-icon" />
                 <input
                   type="text"
                   required
-                  placeholder="+14155552671"
-                  value={smsData.toPhoneNumber}
-                  onChange={(e) => setSmsData({ ...smsData, toPhoneNumber: e.target.value })}
+                  placeholder="+918590651189"
+                  value={smsData.to}
+                  onChange={(e) => setSmsData({ ...smsData, to: e.target.value })}
                 />
               </div>
+              <small className="text-muted text-xs mt-1">
+                Twilio Free Trial destination number: <code>+918590651189</code>
+              </small>
             </div>
 
             <div className="form-group mb-4">
@@ -115,7 +126,7 @@ export default function SmsModuleTab() {
           {sendResult && (
             <div className={`alert alert-${sendResult.type} mt-4`}>
               {sendResult.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
-              <div>
+              <div className="alert-content-wrapper">
                 <p>{sendResult.msg}</p>
                 {sendResult.data && (
                   <pre className="json-preview">{JSON.stringify(sendResult.data, null, 2)}</pre>

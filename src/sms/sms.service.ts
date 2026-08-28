@@ -1,4 +1,4 @@
-﻿import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SendSmsDto } from './dto/send-sms.dto';
@@ -36,7 +36,6 @@ export class SmsService {
       result = { success: true, messageId: mockId };
     } else {
       result = await this.twilioProvider.sendSms(dto);
-      // Fallback to mock if Twilio trial restricts templates
       if (!result.success && result.error?.includes('Trial accounts')) {
         this.logger.warn(`Twilio trial template restriction detected. Falling back to Mock delivery.`);
         const mockId = `MOCK_TWILIO_FALLBACK_${Date.now()}`;
