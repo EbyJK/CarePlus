@@ -71,7 +71,7 @@ export default function StaffWorkspace({ user, onLogout, onUpdateUser }) {
 
         <div className="sidebar-footer">
           <div className="status-live">
-            <span className="live-dot"></span> Staff Session Active
+            <span className="live-dot"></span> Session Active
           </div>
         </div>
       </aside>
@@ -125,7 +125,7 @@ export default function StaffWorkspace({ user, onLogout, onUpdateUser }) {
                     </div>
                     <h2 className="hero-title">Welcome back, {user?.firstName} {user?.lastName}</h2>
                     <p className="hero-subtitle">
-                      Staff Physician &bull; PostgreSQL Authenticated Account
+                      Staff Physician &bull; Authenticated Account
                     </p>
                   </div>
                 </div>
