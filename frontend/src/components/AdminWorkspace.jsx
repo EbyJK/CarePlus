@@ -9,7 +9,6 @@ import {
   HeartPulse, 
   Users, 
   Shield, 
-  Database, 
   Activity, 
   MessageSquare, 
   Radio, 
@@ -124,17 +123,13 @@ export default function AdminWorkspace({ user, onLogout, onUpdateUser }) {
             onClick={() => setActiveTab('profile')}
           >
             <User size={18} />
-            <span>Admin Profile</span>
+            <span>Admin Profile Settings</span>
           </button>
         </nav>
 
         <div className="sidebar-footer">
-          <div className="db-indicator">
-            <Database size={15} className="text-cyan" />
-            <span>PostgreSQL: <code>nest_modules_db</code></span>
-          </div>
           <div className="status-live">
-            <span className="live-dot"></span> Admin JWT Session Active
+            <span className="live-dot"></span> Session Active
           </div>
         </div>
       </aside>
@@ -194,7 +189,7 @@ export default function AdminWorkspace({ user, onLogout, onUpdateUser }) {
                     </div>
                     <h2 className="hero-title">Admin Dashboard — {user?.firstName} {user?.lastName}</h2>
                     <p className="hero-subtitle">
-                      Role: <span className="text-purple font-bold">{user?.role?.toUpperCase()}</span> &bull; PostgreSQL Authenticated Session
+                      Role: <span className="text-purple font-bold">{user?.role?.toUpperCase()}</span>
                     </p>
                   </div>
                 </div>
@@ -222,11 +217,10 @@ export default function AdminWorkspace({ user, onLogout, onUpdateUser }) {
                     <div className="kpi-icon-wrapper icon-purple">
                       <Users size={22} />
                     </div>
-                    <span className="kpi-trend positive">Real DB Count</span>
+                    <span className="kpi-trend positive">Total Users</span>
                   </div>
                   <div className="kpi-value">{dbStats.loading ? '...' : dbStats.totalUsers}</div>
-                  <div className="kpi-label">Registered Accounts in PostgreSQL</div>
-                  <div className="kpi-footer"><code>user_management_accounts</code> table</div>
+                  <div className="kpi-label">Registered Accounts</div>
                 </div>
 
                 <div className="kpi-card" onClick={() => setActiveTab('team')}>
@@ -238,7 +232,6 @@ export default function AdminWorkspace({ user, onLogout, onUpdateUser }) {
                   </div>
                   <div className="kpi-value">{dbStats.loading ? '...' : dbStats.activeStaff}</div>
                   <div className="kpi-label">Active Staff Members</div>
-                  <div className="kpi-footer">Account status verified</div>
                 </div>
 
                 <div className="kpi-card" onClick={() => setActiveTab('sms')}>
@@ -246,11 +239,10 @@ export default function AdminWorkspace({ user, onLogout, onUpdateUser }) {
                     <div className="kpi-icon-wrapper icon-cyan">
                       <MessageSquare size={22} />
                     </div>
-                    <span className="kpi-trend neutral">Postgres Logs</span>
+                    <span className="kpi-trend neutral">SMS History</span>
                   </div>
                   <div className="kpi-value">{dbStats.loading ? '...' : dbStats.totalSmsLogs}</div>
                   <div className="kpi-label">Total SMS Log Records</div>
-                  <div className="kpi-footer"><code>sms_logs</code> table history</div>
                 </div>
 
                 <div className="kpi-card">
@@ -261,8 +253,7 @@ export default function AdminWorkspace({ user, onLogout, onUpdateUser }) {
                     <span className="kpi-trend positive">Live</span>
                   </div>
                   <div className="kpi-value">Connected</div>
-                  <div className="kpi-label">PostgreSQL Database Engine</div>
-                  <div className="kpi-footer">NestJS TypeORM Engine Active</div>
+                  <div className="kpi-label">Database Engine</div>
                 </div>
               </div>
 
@@ -289,7 +280,7 @@ export default function AdminWorkspace({ user, onLogout, onUpdateUser }) {
                       <UserPlus size={18} className="text-cyan" />
                       <h4>Add Team Member</h4>
                     </div>
-                    <p className="card-desc">Provision a new staff account in the PostgreSQL database.</p>
+                    <p className="card-desc">Provision a new staff account in the database.</p>
                     <button className="btn btn-primary btn-sm mt-3">Add Member &bull;&gt;</button>
                   </div>
 

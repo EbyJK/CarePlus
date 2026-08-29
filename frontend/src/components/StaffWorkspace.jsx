@@ -4,14 +4,14 @@ import TelegramModuleTab from './TelegramModuleTab';
 import ProfileSettingsTab from './ProfileSettingsTab';
 import { 
   HeartPulse, 
+  User, 
   MessageSquare, 
   Radio, 
-  User, 
   LogOut, 
   Sparkles, 
-  Send, 
-  Activity,
-  Shield
+  Activity, 
+  Shield, 
+  Send 
 } from 'lucide-react';
 
 export default function StaffWorkspace({ user, onLogout, onUpdateUser }) {
@@ -19,7 +19,7 @@ export default function StaffWorkspace({ user, onLogout, onUpdateUser }) {
 
   return (
     <div className="app-layout">
-      {/* Dedicated Staff Portal Sidebar */}
+      {/* Clinical Staff Sidebar */}
       <aside className="sidebar staff-sidebar-theme">
         <div className="brand">
           <div className="brand-logo shadow-glow">
@@ -27,7 +27,7 @@ export default function StaffWorkspace({ user, onLogout, onUpdateUser }) {
           </div>
           <div>
             <h1 className="brand-title">CarePulse</h1>
-            <span className="brand-badge badge-cyan">CLINICAL STAFF PORTAL</span>
+            <span className="brand-badge badge-cyan">CARE PORTAL</span>
           </div>
         </div>
 
@@ -65,7 +65,7 @@ export default function StaffWorkspace({ user, onLogout, onUpdateUser }) {
             onClick={() => setActiveTab('profile')}
           >
             <User size={18} />
-            <span>My Profile</span>
+            <span>My Profile Settings</span>
           </button>
         </nav>
 

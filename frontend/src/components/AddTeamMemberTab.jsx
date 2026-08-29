@@ -18,13 +18,13 @@ export default function AddTeamMemberTab({ onNavigateToDirectory }) {
   const handleAddMemberSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setSubmitStatus({ type: 'info', msg: 'Registering new staff member in PostgreSQL...' });
+    setSubmitStatus({ type: 'info', msg: 'Registering new staff member...' });
     try {
       await api.registerUser(newMember);
       
       setSubmitStatus({
         type: 'success',
-        msg: `Member ${newMember.firstName} ${newMember.lastName} added successfully to PostgreSQL database!`,
+        msg: `Member ${newMember.firstName} ${newMember.lastName} added successfully!`,
       });
 
       setNewMember({
@@ -47,7 +47,7 @@ export default function AddTeamMemberTab({ onNavigateToDirectory }) {
       <div className="tab-header flex-between">
         <div>
           <h2><UserPlus className="icon-header text-purple" /> Add Care Team Member</h2>
-          <p className="subtitle">Create and provision a new staff user account stored in PostgreSQL (<code>user_management_accounts</code>).</p>
+          <p className="subtitle">Create and provision a new staff user account.</p>
         </div>
         {onNavigateToDirectory && (
           <button onClick={onNavigateToDirectory} className="btn btn-outline">

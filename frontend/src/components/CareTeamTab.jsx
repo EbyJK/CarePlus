@@ -194,11 +194,15 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
   };
 
   const filteredUsers = users.filter((u) => {
+    const query = searchQuery.trim().toLowerCase();
+    const cleanQuery = query.replace('#', '');
     const fullName = `${u.firstName || ''} ${u.lastName || ''}`.toLowerCase();
-    const emailMatches = (u.email || '').toLowerCase().includes(searchQuery.toLowerCase());
-    const nameMatches = fullName.includes(searchQuery.toLowerCase());
+    const emailMatches = (u.email || '').toLowerCase().includes(query);
+    const nameMatches = fullName.includes(query);
+    const idMatches = cleanQuery.length > 0 && (u.id || '').toString().includes(cleanQuery);
+
     const roleMatches = roleFilter === 'all' || (u.role && u.role.toLowerCase() === roleFilter.toLowerCase());
-    return (nameMatches || emailMatches) && roleMatches;
+    return (nameMatches || emailMatches || idMatches) && roleMatches;
   });
 
   return (
@@ -242,13 +246,13 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
         </div>
       )}
 
-      {/* Directory Filter Bar */}
-      <div className="card filter-bar-card">
+      {/* STICKY DIRECTORY SEARCH & FILTER BAR */}
+      <div className="card filter-bar-card sticky-filter-card">
         <div className="search-bar modal-search">
           <Search size={16} className="search-icon" />
           <input
             type="text"
-            placeholder="Search by staff name or email address..."
+            placeholder="Search by staff name, email, or PostgreSQL ID (#1)..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />

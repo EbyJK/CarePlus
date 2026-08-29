@@ -139,11 +139,29 @@ export default function ProfileSettingsTab({ currentUser, onUpdateUser }) {
     }
   };
 
+  const scrollToPasswordCard = () => {
+    const cardEl = document.getElementById('change-password-card');
+    if (cardEl) {
+      cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
   return (
     <div className="tab-container">
-      <div className="tab-header">
-        <h2><User className="icon-header text-purple" /> User Profile & Avatar Settings</h2>
-        <p className="subtitle">Manage your physician avatar photo, personal details, and account credentials.</p>
+      <div className="tab-header flex-between">
+        <div>
+          <h2><User className="icon-header text-purple" /> User Profile & Avatar Settings</h2>
+          <p className="subtitle">Manage your physician avatar photo, personal details, and account credentials.</p>
+        </div>
+        <button
+          type="button"
+          className="btn btn-purple"
+          onClick={scrollToPasswordCard}
+          title="Scroll down to change password"
+        >
+          <Key size={15} />
+          <span>Change Password &bull;&gt;</span>
+        </button>
       </div>
 
       <div className="form-card-container">
@@ -267,7 +285,7 @@ export default function ProfileSettingsTab({ currentUser, onUpdateUser }) {
         </div>
 
         {/* Account Password Change Card */}
-        <div className="card">
+        <div className="card" id="change-password-card">
           <div className="card-header mb-2">
             <Key className="card-icon text-cyan" />
             <h3>Change Account Password</h3>

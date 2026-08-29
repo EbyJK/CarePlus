@@ -87,7 +87,7 @@ export default function TelegramModuleTab() {
     <div className="tab-container">
       <div className="tab-header">
         <h2><Radio className="icon-header text-blue" /> Telegram Broadcast Center</h2>
-        <p className="subtitle">Broadcast formatted emergency notifications and clinical media directly to Telegram channel (Bot API).</p>
+        <p className="subtitle">Broadcast formatted emergency notifications and clinical media directly to Telegram channel.</p>
       </div>
 
       <div className="form-card-container">
