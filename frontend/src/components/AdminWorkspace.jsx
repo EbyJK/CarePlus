@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import CareTeamTab from './CareTeamTab';
 import AddTeamMemberTab from './AddTeamMemberTab';
+import PatientsModuleTab from './PatientsModuleTab';
 import SmsModuleTab from './SmsModuleTab';
 import TelegramModuleTab from './TelegramModuleTab';
 import ProfileSettingsTab from './ProfileSettingsTab';
@@ -96,6 +97,16 @@ export default function AdminWorkspace({ user, onLogout, onUpdateUser }) {
           >
             <UserPlus size={18} />
             <span>Add Team Member</span>
+          </button>
+
+          <div className="nav-section-title">CLINICAL PATIENT CARE</div>
+
+          <button
+            className={`nav-item ${activeTab === 'patients' ? 'active' : ''}`}
+            onClick={() => setActiveTab('patients')}
+          >
+            <HeartPulse size={18} />
+            <span>Hospital Patient Roster</span>
           </button>
 
           <div className="nav-section-title">SYSTEM DISPATCH & ALERTS</div>
@@ -195,6 +206,9 @@ export default function AdminWorkspace({ user, onLogout, onUpdateUser }) {
                 </div>
 
                 <div className="hero-actions">
+                  <button className="btn btn-primary btn-sm" onClick={() => setActiveTab('patients')}>
+                    <HeartPulse size={16} /> Patient Roster
+                  </button>
                   <button
                     className="btn btn-purple btn-sm"
                     onClick={() => setActiveTab('add-member')}
@@ -203,9 +217,6 @@ export default function AdminWorkspace({ user, onLogout, onUpdateUser }) {
                   </button>
                   <button className="btn btn-emerald btn-sm" onClick={() => setActiveTab('sms')}>
                     <MessageSquare size={16} /> Send SMS Alert
-                  </button>
-                  <button className="btn btn-blue btn-sm" onClick={() => setActiveTab('telegram')}>
-                    <Radio size={16} /> Emergency Broadcast
                   </button>
                 </div>
               </div>
@@ -245,15 +256,15 @@ export default function AdminWorkspace({ user, onLogout, onUpdateUser }) {
                   <div className="kpi-label">Total SMS Log Records</div>
                 </div>
 
-                <div className="kpi-card">
+                <div className="kpi-card" onClick={() => setActiveTab('patients')}>
                   <div className="kpi-header">
                     <div className="kpi-icon-wrapper icon-blue">
-                      <Activity size={22} />
+                      <HeartPulse size={22} />
                     </div>
-                    <span className="kpi-trend positive">Live</span>
+                    <span className="kpi-trend positive">Clinical</span>
                   </div>
-                  <div className="kpi-value">Connected</div>
-                  <div className="kpi-label">Database Engine</div>
+                  <div className="kpi-value">Live</div>
+                  <div className="kpi-label">Patient Vitals Engine</div>
                 </div>
               </div>
 
@@ -263,9 +274,18 @@ export default function AdminWorkspace({ user, onLogout, onUpdateUser }) {
                   <Shield className="text-purple" size={22} />
                   <h3>Administrative Control Panel</h3>
                 </div>
-                <p className="card-desc">Execute system management tasks, create new staff accounts, and dispatch emergency alerts.</p>
+                <p className="card-desc">Execute system management tasks, manage hospital patients, and dispatch emergency alerts.</p>
 
                 <div className="shortcut-cards-grid mt-2">
+                  <div className="shortcut-box" onClick={() => setActiveTab('patients')}>
+                    <div className="card-header mb-1">
+                      <HeartPulse size={18} className="text-cyan" />
+                      <h4>Hospital Patient Roster</h4>
+                    </div>
+                    <p className="card-desc">Monitor hospital patients and re-assign doctors.</p>
+                    <button className="btn btn-primary btn-sm mt-3">View Patients &bull;&gt;</button>
+                  </div>
+
                   <div className="shortcut-box" onClick={() => setActiveTab('team')}>
                     <div className="card-header mb-1">
                       <Users size={18} className="text-purple" />
@@ -273,15 +293,6 @@ export default function AdminWorkspace({ user, onLogout, onUpdateUser }) {
                     </div>
                     <p className="card-desc">Manage staff user profiles, change roles, or toggle account status.</p>
                     <button className="btn btn-purple btn-sm mt-3">Manage Directory &bull;&gt;</button>
-                  </div>
-
-                  <div className="shortcut-box" onClick={() => setActiveTab('add-member')}>
-                    <div className="card-header mb-1">
-                      <UserPlus size={18} className="text-cyan" />
-                      <h4>Add Team Member</h4>
-                    </div>
-                    <p className="card-desc">Provision a new staff account in the database.</p>
-                    <button className="btn btn-primary btn-sm mt-3">Add Member &bull;&gt;</button>
                   </div>
 
                   <div className="shortcut-box" onClick={() => setActiveTab('sms')}>
@@ -295,6 +306,10 @@ export default function AdminWorkspace({ user, onLogout, onUpdateUser }) {
                 </div>
               </div>
             </div>
+          )}
+
+          {activeTab === 'patients' && (
+            <PatientsModuleTab currentUser={user} isAdmin={true} />
           )}
 
           {activeTab === 'team' && (

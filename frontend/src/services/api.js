@@ -93,6 +93,32 @@ export const api = {
       body: JSON.stringify(data),
     }),
 
+  // Patient & Vitals Management Endpoints
+  getPatients: () => request('/patients'),
+
+  createPatient: (patientData) =>
+    request('/patients', {
+      method: 'POST',
+      body: JSON.stringify(patientData),
+    }),
+
+  reassignPatient: (id, staffId) =>
+    request(`/patients/${id}/reassign`, {
+      method: 'PATCH',
+      body: JSON.stringify({ staffId }),
+    }),
+
+  deletePatient: (id) =>
+    request(`/patients/${id}`, {
+      method: 'DELETE',
+    }),
+
+  sendVitalsPdfReport: (id, reportData) =>
+    request(`/patients/${id}/send-vitals-report`, {
+      method: 'POST',
+      body: JSON.stringify(reportData),
+    }),
+
   // SMS Endpoints
   sendSms: (smsData) =>
     request('/sms/send', {

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PatientsModuleTab from './PatientsModuleTab';
 import SmsModuleTab from './SmsModuleTab';
 import TelegramModuleTab from './TelegramModuleTab';
 import ProfileSettingsTab from './ProfileSettingsTab';
@@ -44,6 +45,16 @@ export default function StaffWorkspace({ user, onLogout, onUpdateUser }) {
             <span>Staff Portal Overview</span>
           </button>
 
+          <div className="nav-section-title">CLINICAL PATIENT CARE</div>
+
+          <button
+            className={`nav-item ${activeTab === 'patients' ? 'active' : ''}`}
+            onClick={() => setActiveTab('patients')}
+          >
+            <HeartPulse size={18} />
+            <span>My Assigned Patients</span>
+          </button>
+
           <button
             className={`nav-item ${activeTab === 'sms' ? 'active' : ''}`}
             onClick={() => setActiveTab('sms')}
@@ -57,7 +68,7 @@ export default function StaffWorkspace({ user, onLogout, onUpdateUser }) {
             onClick={() => setActiveTab('telegram')}
           >
             <Radio size={18} />
-            <span>Telegram Channel Bulletins</span>
+            <span>Telegram Bulletins</span>
           </button>
 
           <div className="nav-section-title">ACCOUNT</div>
@@ -133,11 +144,11 @@ export default function StaffWorkspace({ user, onLogout, onUpdateUser }) {
                 </div>
 
                 <div className="hero-actions">
+                  <button className="btn btn-primary btn-sm" onClick={() => setActiveTab('patients')}>
+                    <HeartPulse size={16} /> My Assigned Patients
+                  </button>
                   <button className="btn btn-emerald btn-sm" onClick={() => setActiveTab('sms')}>
                     <MessageSquare size={16} /> Send Patient SMS
-                  </button>
-                  <button className="btn btn-blue btn-sm" onClick={() => setActiveTab('telegram')}>
-                    <Radio size={16} /> View Channel Bulletins
                   </button>
                 </div>
               </div>
@@ -148,9 +159,20 @@ export default function StaffWorkspace({ user, onLogout, onUpdateUser }) {
                   <Shield className="text-cyan" size={22} />
                   <h3>Clinical Quick Actions</h3>
                 </div>
-                <p className="card-desc">Access clinical dispatch tools, SMS patient alerts, and profile settings.</p>
+                <p className="card-desc">Access patient vitals rosters, clinical dispatch tools, and profile settings.</p>
 
                 <div className="shortcut-cards-grid mt-2">
+                  <div className="shortcut-box" onClick={() => setActiveTab('patients')}>
+                    <div className="card-header mb-1">
+                      <HeartPulse size={18} className="text-cyan" />
+                      <h4>My Assigned Patients</h4>
+                    </div>
+                    <p className="card-desc">View assigned patients, record vitals, and email PDF reports.</p>
+                    <button className="btn btn-primary btn-sm mt-3">
+                      View My Patients &bull;&gt;
+                    </button>
+                  </div>
+
                   <div className="shortcut-box" onClick={() => setActiveTab('sms')}>
                     <div className="card-header mb-1">
                       <MessageSquare size={18} className="text-emerald" />
@@ -159,17 +181,6 @@ export default function StaffWorkspace({ user, onLogout, onUpdateUser }) {
                     <p className="card-desc">Compose SMS alerts for prescription pickups and appointments.</p>
                     <button className="btn btn-emerald btn-sm mt-3">
                       <Send size={15} /> Compose SMS Alert
-                    </button>
-                  </div>
-
-                  <div className="shortcut-box" onClick={() => setActiveTab('telegram')}>
-                    <div className="card-header mb-1">
-                      <Radio size={18} className="text-blue" />
-                      <h4>Telegram Channel Alerts</h4>
-                    </div>
-                    <p className="card-desc">Access formatted channel broadcasts from medical operations.</p>
-                    <button className="btn btn-blue btn-sm mt-3">
-                      View Telegram Center
                     </button>
                   </div>
 
@@ -186,6 +197,10 @@ export default function StaffWorkspace({ user, onLogout, onUpdateUser }) {
                 </div>
               </div>
             </div>
+          )}
+
+          {activeTab === 'patients' && (
+            <PatientsModuleTab currentUser={user} isAdmin={false} />
           )}
 
           {activeTab === 'sms' && <SmsModuleTab />}

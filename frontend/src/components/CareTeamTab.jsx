@@ -62,7 +62,7 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
     try {
       await ensureAdminToken();
       const res = await api.getUsers();
-      
+
       let userList = [];
       if (Array.isArray(res)) {
         userList = res;
@@ -202,7 +202,7 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
     const idMatches = cleanQuery.length > 0 && (u.id || '').toString().includes(cleanQuery);
 
     const userRole = (u.role || 'user').toLowerCase();
-    const roleMatches = roleFilter === 'all' 
+    const roleMatches = roleFilter === 'all'
       || (roleFilter === 'user' && (userRole === 'user' || userRole === 'staff'))
       || (roleFilter === 'admin' && (userRole === 'admin' || userRole === 'superadmin'));
 
@@ -256,7 +256,7 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
           <Search size={16} className="search-icon" />
           <input
             type="text"
-            placeholder="Search by staff name, email, or ID (#1)..."
+            placeholder="Search by staff name, email, or ID ..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />

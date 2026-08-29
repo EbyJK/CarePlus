@@ -2,6 +2,7 @@ import { DataSource } from 'typeorm';
 import * as dotenv from 'dotenv';
 import { User } from './users/entities/user.entity';
 import { SmsLog } from './sms/entities/sms-log.entity';
+import { Patient } from './patients/entities/patient.entity';
 
 dotenv.config();
 
@@ -12,7 +13,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres',
   database: process.env.DB_NAME || 'nest_modules_db',
-  entities: [User, SmsLog],
+  entities: [User, SmsLog, Patient],
   migrations: ['src/migrations/*.ts'],
   synchronize: false,
 });
