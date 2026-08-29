@@ -17,6 +17,8 @@ import {
 export default function StaffWorkspace({ user, onLogout, onUpdateUser }) {
   const [activeTab, setActiveTab] = useState('overview');
 
+  const displayRoleBadge = (user?.role?.toLowerCase() === 'user' || user?.role?.toLowerCase() === 'staff') ? 'STAFF' : user?.role?.toUpperCase();
+
   return (
     <div className="app-layout">
       {/* Clinical Staff Sidebar */}
@@ -84,7 +86,7 @@ export default function StaffWorkspace({ user, onLogout, onUpdateUser }) {
             <div className="flex-align gap-2">
               <HeartPulse className="text-cyan" size={20} />
               <span className="font-bold">CarePulse Staff Portal</span>
-              <span className="badge badge-cyan">{user?.role?.toUpperCase() || 'USER'}</span>
+              <span className="badge badge-cyan">{displayRoleBadge}</span>
             </div>
           </div>
 
@@ -125,7 +127,7 @@ export default function StaffWorkspace({ user, onLogout, onUpdateUser }) {
                     </div>
                     <h2 className="hero-title">Welcome back, {user?.firstName} {user?.lastName}</h2>
                     <p className="hero-subtitle">
-                      Staff Physician &bull; Authenticated Account
+                      Staff Physician
                     </p>
                   </div>
                 </div>

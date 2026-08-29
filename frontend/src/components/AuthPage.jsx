@@ -12,7 +12,7 @@ const DEMO_CREDENTIALS = [
     icon: Sparkles,
   },
   {
-    label: 'Postgres Admin',
+    label: 'Admin Account',
     email: 'admin.postgres@example.com',
     password: 'AdminPassword123!',
     role: 'ADMIN',
@@ -20,10 +20,10 @@ const DEMO_CREDENTIALS = [
     icon: ShieldCheck,
   },
   {
-    label: 'Postgres User',
+    label: 'Staff Member',
     email: 'user.postgres@example.com',
     password: 'UserPassword123!',
-    role: 'USER',
+    role: 'STAFF',
     badgeClass: 'badge-user',
     icon: UserCheck,
   },
@@ -61,7 +61,7 @@ export default function AuthPage({ onLoginSuccess }) {
   const handleLogin = async (e) => {
     if (e) e.preventDefault();
     setLoading(true);
-    setAuthStatus({ type: 'info', msg: 'Authenticating credentials with NestJS PostgreSQL backend...' });
+    setAuthStatus({ type: 'info', msg: 'Authenticating credentials...' });
 
     try {
       const res = await api.loginUser(loginData);
@@ -74,9 +74,10 @@ export default function AuthPage({ onLoginSuccess }) {
 
       localStorage.setItem('jwt_token', token);
 
+      const displayRole = (user.role?.toLowerCase() === 'user') ? 'STAFF' : user.role?.toUpperCase();
       setAuthStatus({
         type: 'success',
-        msg: `Authentication Successful! Signed in as ${user.email} (${user.role?.toUpperCase()})`,
+        msg: `Authentication Successful! Signed in as ${user.email} (${displayRole})`,
       });
 
       setTimeout(() => {
@@ -92,7 +93,7 @@ export default function AuthPage({ onLoginSuccess }) {
   const handleRegister = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setAuthStatus({ type: 'info', msg: 'Registering account in PostgreSQL database...' });
+    setAuthStatus({ type: 'info', msg: 'Registering account...' });
 
     try {
       await api.registerUser(registerData);
@@ -128,7 +129,7 @@ export default function AuthPage({ onLoginSuccess }) {
   const handleRequestOtp = async (e) => {
     e.preventDefault();
     setLoadingOtp(true);
-    setOtpStatus({ type: 'info', msg: 'Generating 6-digit OTP code in PostgreSQL database...' });
+    setOtpStatus({ type: 'info', msg: 'Generating 6-digit OTP code...' });
     try {
       const res = await api.requestForgotPasswordOtp({ email: forgotEmail });
       const code = res.otpCode || res.data?.otpCode || '849201';
@@ -136,7 +137,7 @@ export default function AuthPage({ onLoginSuccess }) {
       setOtpCodeInput(code); // Pre-fill for convenience
       setOtpStatus({
         type: 'success',
-        msg: `OTP Code Generated in PostgreSQL! Code: ${code}`,
+        msg: `OTP Code Generated! Code: ${code}`,
       });
       setOtpStep(2);
     } catch (err) {
@@ -149,7 +150,7 @@ export default function AuthPage({ onLoginSuccess }) {
   const handleResetPassword = async (e) => {
     e.preventDefault();
     setLoadingOtp(true);
-    setOtpStatus({ type: 'info', msg: 'Resetting account password in PostgreSQL...' });
+    setOtpStatus({ type: 'info', msg: 'Resetting account password...' });
     try {
       await api.resetPasswordWithOtp({
         email: forgotEmail,
@@ -272,7 +273,7 @@ export default function AuthPage({ onLoginSuccess }) {
 
             <button type="submit" className="btn btn-primary btn-block mt-2" disabled={loading}>
               {loading ? (
-                <span>Authenticating with NestJS...</span>
+                <span>Authenticating...</span>
               ) : (
                 <>
                   <span>Sign In to CarePulse</span>
@@ -335,9 +336,8 @@ export default function AuthPage({ onLoginSuccess }) {
                   value={registerData.role}
                   onChange={(e) => setRegisterData({ ...registerData, role: e.target.value })}
                 >
-                  <option value="user">User / Physician</option>
-                  <option value="supervisor">Supervisor</option>
-                  <option value="admin">Admin</option>
+                  <option value="user">Staff / Physician</option>
+                  <option value="admin">Admin / Officer</option>
                 </select>
               </div>
             </div>
@@ -353,7 +353,7 @@ export default function AuthPage({ onLoginSuccess }) {
             </div>
 
             <button type="submit" className="btn btn-emerald btn-block mt-2" disabled={loading}>
-              {loading ? 'Creating Account in PostgreSQL...' : 'Register Account'}
+              {loading ? 'Creating Account...' : 'Register Account'}
             </button>
           </form>
         )}
@@ -365,10 +365,6 @@ export default function AuthPage({ onLoginSuccess }) {
             <span>{authStatus.msg}</span>
           </div>
         )}
-
-        <div className="auth-footer-note">
-          <span>Protected by NestJS JWT Strategy & PostgreSQL Database &bull; Port 3000</span>
-        </div>
       </div>
 
       {/* Forgot Password OTP Modal */}
@@ -380,7 +376,7 @@ export default function AuthPage({ onLoginSuccess }) {
               <Key className="text-cyan" size={24} />
               <div>
                 <h3>Reset Account Password (OTP System)</h3>
-                <p>Generate a 6-digit security OTP code stored in PostgreSQL.</p>
+                <p>Generate a 6-digit security OTP code for verification.</p>
               </div>
             </div>
 

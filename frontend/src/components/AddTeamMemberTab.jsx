@@ -47,7 +47,7 @@ export default function AddTeamMemberTab({ onNavigateToDirectory }) {
       <div className="tab-header flex-between">
         <div>
           <h2><UserPlus className="icon-header text-purple" /> Add Care Team Member</h2>
-          <p className="subtitle">Create and provision a new staff user account.</p>
+          <p className="subtitle">Create and provision a new staff account.</p>
         </div>
         {onNavigateToDirectory && (
           <button onClick={onNavigateToDirectory} className="btn btn-outline">
@@ -120,8 +120,7 @@ export default function AddTeamMemberTab({ onNavigateToDirectory }) {
                   onChange={(e) => setNewMember({ ...newMember, role: e.target.value })}
                 >
                   <option value="admin">Admin / Officer (Full Access)</option>
-                  <option value="supervisor">Supervisor (Care Lead)</option>
-                  <option value="user">Physician / User (Staff Portal)</option>
+                  <option value="user">Staff / Physician (Clinical Portal)</option>
                 </select>
               </div>
             </div>

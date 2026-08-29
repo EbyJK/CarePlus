@@ -90,7 +90,7 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
             return;
           }
         } catch (retryErr) {
-          setAuthError('JWT Admin Token required to view PostgreSQL users list.');
+          setAuthError('Admin Token required to view staff directory.');
         }
       } else {
         setAuthError(err.message);
@@ -112,7 +112,7 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
       await api.toggleUserStatus(userObj.id, nextStatus);
       setActionStatus({
         type: 'success',
-        msg: `Account ${userObj.firstName} ${userObj.lastName} ${nextStatus ? 'activated' : 'deactivated'} in PostgreSQL!`,
+        msg: `Account ${userObj.firstName} ${userObj.lastName} ${nextStatus ? 'activated' : 'deactivated'}!`,
       });
       fetchCareTeam();
     } catch (err) {
@@ -131,7 +131,7 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
       await api.updateUser(userObj.id, { role: newRole });
       setActionStatus({
         type: 'success',
-        msg: `Role for ${userObj.firstName} updated to ${newRole.toUpperCase()} in PostgreSQL!`,
+        msg: `Role for ${userObj.firstName} updated successfully!`,
       });
       fetchCareTeam();
     } catch (err) {
@@ -145,7 +145,7 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
       return;
     }
 
-    if (!window.confirm(`Are you sure you want to soft-delete ${userObj.firstName} ${userObj.lastName} from PostgreSQL?`)) {
+    if (!window.confirm(`Are you sure you want to delete ${userObj.firstName} ${userObj.lastName}?`)) {
       return;
     }
 
@@ -154,7 +154,7 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
       await api.deleteUser(userObj.id);
       setActionStatus({
         type: 'success',
-        msg: `User account #${userObj.id} (${userObj.firstName}) soft-deleted successfully!`,
+        msg: `Staff account #${userObj.id} (${userObj.firstName}) deleted successfully!`,
       });
       fetchCareTeam();
     } catch (err) {
@@ -177,12 +177,12 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
     e.preventDefault();
     if (!editingUser) return;
     setSavingEdit(true);
-    setActionStatus({ type: 'info', msg: `Updating details for ${editFormData.firstName} in PostgreSQL...` });
+    setActionStatus({ type: 'info', msg: `Updating details for ${editFormData.firstName}...` });
     try {
       await api.updateUser(editingUser.id, editFormData);
       setActionStatus({
         type: 'success',
-        msg: `User #${editingUser.id} (${editFormData.firstName} ${editFormData.lastName}) details updated successfully in PostgreSQL!`,
+        msg: `Staff Member #${editingUser.id} (${editFormData.firstName} ${editFormData.lastName}) details updated successfully!`,
       });
       setEditingUser(null);
       fetchCareTeam();
@@ -201,7 +201,11 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
     const nameMatches = fullName.includes(query);
     const idMatches = cleanQuery.length > 0 && (u.id || '').toString().includes(cleanQuery);
 
-    const roleMatches = roleFilter === 'all' || (u.role && u.role.toLowerCase() === roleFilter.toLowerCase());
+    const userRole = (u.role || 'user').toLowerCase();
+    const roleMatches = roleFilter === 'all' 
+      || (roleFilter === 'user' && (userRole === 'user' || userRole === 'staff'))
+      || (roleFilter === 'admin' && (userRole === 'admin' || userRole === 'superadmin'));
+
     return (nameMatches || emailMatches || idMatches) && roleMatches;
   });
 
@@ -252,7 +256,7 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
           <Search size={16} className="search-icon" />
           <input
             type="text"
-            placeholder="Search by staff name, email, or PostgreSQL ID (#1)..."
+            placeholder="Search by staff name, email, or ID (#1)..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -272,23 +276,17 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
             Admins & Officers
           </button>
           <button
-            className={`filter-pill ${roleFilter === 'supervisor' ? 'active' : ''}`}
-            onClick={() => setRoleFilter('supervisor')}
-          >
-            Supervisors
-          </button>
-          <button
             className={`filter-pill ${roleFilter === 'user' ? 'active' : ''}`}
             onClick={() => setRoleFilter('user')}
           >
-            Physicians / Users
+            Physicians & Staff
           </button>
         </div>
       </div>
 
       {/* HORIZONTAL DIRECTORY CARDS LIST WITH SUPERADMIN PROTECTION & EDIT MODAL */}
       {loading ? (
-        <div className="card p-6 text-center text-muted">Loading care team directory from PostgreSQL database...</div>
+        <div className="card p-6 text-center text-muted">Loading care team directory...</div>
       ) : filteredUsers.length === 0 ? (
         <div className="card empty-state-card">
           <Users size={40} className="text-muted mb-2" />
@@ -306,6 +304,7 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
             const avatarUrl = u.avatar || SAMPLE_AVATARS[idx % SAMPLE_AVATARS.length];
             const isSuperadminTarget = u.role?.toLowerCase() === 'superadmin';
             const isProtected = isSuperadminTarget && currentUserRole !== 'superadmin';
+            const displayRoleLabel = (u.role?.toLowerCase() === 'user' || u.role?.toLowerCase() === 'staff') ? 'STAFF' : u.role?.toUpperCase();
 
             return (
               <div key={u.id || idx} className="member-card-horizontal">
@@ -318,7 +317,7 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
                 <div className="horizontal-details">
                   <div className="flex-align gap-2">
                     <h4 className="member-name-lg">{u.firstName} {u.lastName}</h4>
-                    <span className={`badge badge-${(u.role || 'user').toLowerCase()}`}>{u.role}</span>
+                    <span className={`badge badge-${(displayRoleLabel === 'STAFF' ? 'user' : displayRoleLabel.toLowerCase())}`}>{displayRoleLabel}</span>
                     {isProtected && (
                       <span className="badge badge-purple flex-align gap-1" title="Root Superadmin record is protected">
                         <Lock size={12} /> Protected
@@ -354,7 +353,7 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
                       <button
                         className="btn btn-sm btn-outline"
                         onClick={() => openEditModal(u)}
-                        title="Edit staff member details in PostgreSQL"
+                        title="Edit staff member details"
                         disabled={isProtected}
                       >
                         <Edit2 size={13} /> Edit
@@ -362,13 +361,12 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
 
                       <select
                         className="role-select-sm"
-                        value={u.role || 'user'}
+                        value={u.role?.toLowerCase() === 'staff' ? 'user' : (u.role || 'user')}
                         onChange={(e) => handleRoleChange(u, e.target.value)}
-                        title="Change user role in PostgreSQL"
+                        title="Change user role"
                         disabled={isProtected}
                       >
-                        <option value="user">USER</option>
-                        <option value="supervisor">SUPERVISOR</option>
+                        <option value="user">STAFF</option>
                         <option value="admin">ADMIN</option>
                         <option value="superadmin">SUPERADMIN</option>
                       </select>
@@ -407,7 +405,7 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
             <div className="modal-header-title">
               <Edit2 className="text-cyan" size={24} />
               <div>
-                <h3>Edit Staff Member Details (PostgreSQL ID: #{editingUser.id})</h3>
+                <h3>Edit Staff Member Details (ID: #{editingUser.id})</h3>
                 <p>Update profile details, email, and role for {editingUser.firstName}.</p>
               </div>
             </div>
@@ -459,8 +457,7 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
                     value={editFormData.role}
                     onChange={(e) => setEditFormData({ ...editFormData, role: e.target.value })}
                   >
-                    <option value="user">USER (Physician / Staff)</option>
-                    <option value="supervisor">SUPERVISOR</option>
+                    <option value="user">STAFF (Physician / Clinical)</option>
                     <option value="admin">ADMIN</option>
                     <option value="superadmin">SUPERADMIN</option>
                   </select>
@@ -472,7 +469,7 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
                   Cancel
                 </button>
                 <button type="submit" className="btn btn-emerald" disabled={savingEdit}>
-                  <CheckCircle2 size={16} /> {savingEdit ? 'Updating PostgreSQL...' : 'Save User Changes'}
+                  <CheckCircle2 size={16} /> {savingEdit ? 'Updating Details...' : 'Save Changes'}
                 </button>
               </div>
             </form>
