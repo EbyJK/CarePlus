@@ -1,4 +1,4 @@
-﻿import {
+import {
   Injectable,
   UnauthorizedException,
   BadRequestException,
@@ -35,10 +35,11 @@ export class UserAccountAuthService {
     dto: UserLoginDto,
     ipAddress?: string,
   ): Promise<{ accessToken: string; refreshToken: string; user: any }> {
+    const cleanEmail = (dto.email || '').trim().toLowerCase();
     const user = await this.userRepository
       .createQueryBuilder('user')
       .addSelect('user.passwordHash')
-      .where('user.email = :email', { email: dto.email })
+      .where('LOWER(user.email) = :email', { email: cleanEmail })
       .andWhere('user.isDeleted = false')
       .getOne();
 
@@ -169,9 +170,12 @@ export class UserAccountAuthService {
   async requestPasswordResetOtp(
     dto: RequestOtpDto,
   ): Promise<{ message: string; otpCode?: string }> {
-    const user = await this.userRepository.findOne({
-      where: { email: dto.email, isDeleted: false },
-    });
+    const cleanEmail = (dto.email || '').trim().toLowerCase();
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .where('LOWER(user.email) = :email', { email: cleanEmail })
+      .andWhere('user.isDeleted = false')
+      .getOne();
 
     if (!user) {
       return { message: 'If email exists, OTP code has been generated.' };
@@ -181,7 +185,7 @@ export class UserAccountAuthService {
     const expiresAt = new Date(Date.now() + 15 * 60000);
 
     const otp = this.otpRepository.create({
-      email: dto.email,
+      email: cleanEmail,
       otpCode,
       purpose: 'PASSWORD_RESET',
       expiresAt,
@@ -203,9 +207,10 @@ export class UserAccountAuthService {
   }
 
   async resetPasswordWithOtp(dto: ResetPasswordDto): Promise<boolean> {
+    const cleanEmail = (dto.email || '').trim().toLowerCase();
     const otp = await this.otpRepository.findOne({
       where: {
-        email: dto.email,
+        email: cleanEmail,
         otpCode: dto.otpCode,
         isUsed: false,
         purpose: 'PASSWORD_RESET',
@@ -217,9 +222,11 @@ export class UserAccountAuthService {
       throw new BadRequestException('Invalid or expired OTP code');
     }
 
-    const user = await this.userRepository.findOne({
-      where: { email: dto.email, isDeleted: false },
-    });
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .where('LOWER(user.email) = :email', { email: cleanEmail })
+      .andWhere('user.isDeleted = false')
+      .getOne();
 
     if (!user) {
       throw new NotFoundException('User not found');
