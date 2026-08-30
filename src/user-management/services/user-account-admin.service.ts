@@ -1,7 +1,8 @@
-﻿import {
+import {
   Injectable,
   NotFoundException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -23,7 +24,7 @@ export class UserAccountAdminService {
 
   async create(
     dto: CreateUserAccountDto,
-    performedByUserId?: number,
+    performedByAccount?: UserAccount,
   ): Promise<UserAccount> {
     const existing = await this.userRepository.findOne({
       where: { email: dto.email },
@@ -31,6 +32,12 @@ export class UserAccountAdminService {
 
     if (existing) {
       throw new ConflictException('User with this email already exists');
+    }
+
+    if (dto.role === UserManagementRole.SUPERADMIN) {
+      if (performedByAccount && performedByAccount.role !== UserManagementRole.SUPERADMIN) {
+        throw new ForbiddenException('Only a Superadmin can assign the SUPERADMIN role.');
+      }
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -50,7 +57,7 @@ export class UserAccountAdminService {
     const savedUser = await this.userRepository.save(user);
 
     await this.auditService.logAction({
-      userAccountId: performedByUserId || savedUser.id,
+      userAccountId: performedByAccount ? performedByAccount.id : savedUser.id,
       action: 'USER_CREATED',
       description: `User account created for ${savedUser.email}`,
       metadata: { targetUserId: savedUser.id, role: savedUser.role },
@@ -102,9 +109,24 @@ export class UserAccountAdminService {
   async update(
     id: number,
     dto: UpdateUserAccountDto,
-    performedByUserId?: number,
+    performedByAccount?: UserAccount,
   ): Promise<UserAccount> {
     const user = await this.findOne(id);
+    const isSelf = performedByAccount && performedByAccount.id === id;
+
+    // Rule 1: Only a Superadmin can assign the SUPERADMIN role
+    if (dto.role === UserManagementRole.SUPERADMIN) {
+      if (performedByAccount && performedByAccount.role !== UserManagementRole.SUPERADMIN) {
+        throw new ForbiddenException('Only a Superadmin can assign the SUPERADMIN role.');
+      }
+    }
+
+    // Rule 2: Superadmin accounts can only be modified by Superadmin or self
+    if (user.role === UserManagementRole.SUPERADMIN && !isSelf) {
+      if (performedByAccount && performedByAccount.role !== UserManagementRole.SUPERADMIN) {
+        throw new ForbiddenException('Superadmin accounts can only be modified by a Superadmin.');
+      }
+    }
 
     if (dto.email && dto.email !== user.email) {
       const existing = await this.userRepository.findOne({
@@ -125,7 +147,7 @@ export class UserAccountAdminService {
     const updatedUser = await this.userRepository.save(user);
 
     await this.auditService.logAction({
-      userAccountId: performedByUserId || id,
+      userAccountId: performedByAccount ? performedByAccount.id : id,
       action: 'USER_UPDATED',
       description: `Updated profile details for user #${id}`,
       metadata: { targetUserId: id, updatedFields: Object.keys(dto) },
@@ -137,14 +159,22 @@ export class UserAccountAdminService {
   async toggleActive(
     id: number,
     isActive: boolean,
-    performedByUserId?: number,
+    performedByAccount?: UserAccount,
   ): Promise<UserAccount> {
     const user = await this.findOne(id);
+    const isSelf = performedByAccount && performedByAccount.id === id;
+
+    if (user.role === UserManagementRole.SUPERADMIN && !isSelf) {
+      if (performedByAccount && performedByAccount.role !== UserManagementRole.SUPERADMIN) {
+        throw new ForbiddenException('Superadmin accounts can only be modified by a Superadmin.');
+      }
+    }
+
     user.isActive = isActive;
     const updated = await this.userRepository.save(user);
 
     await this.auditService.logAction({
-      userAccountId: performedByUserId || id,
+      userAccountId: performedByAccount ? performedByAccount.id : id,
       action: isActive ? 'USER_ACTIVATED' : 'USER_DEACTIVATED',
       description: `User account #${id} ${isActive ? 'activated' : 'deactivated'}`,
       metadata: { targetUserId: id, isActive },
@@ -153,8 +183,15 @@ export class UserAccountAdminService {
     return updated;
   }
 
-  async remove(id: number, performedByUserId?: number): Promise<boolean> {
+  async remove(id: number, performedByAccount?: UserAccount): Promise<boolean> {
     const user = await this.findOne(id);
+    const isSelf = performedByAccount && performedByAccount.id === id;
+
+    if (user.role === UserManagementRole.SUPERADMIN && !isSelf) {
+      if (performedByAccount && performedByAccount.role !== UserManagementRole.SUPERADMIN) {
+        throw new ForbiddenException('Superadmin accounts can only be deleted by a Superadmin.');
+      }
+    }
 
     user.isDeleted = true;
     user.isActive = false;
@@ -163,7 +200,7 @@ export class UserAccountAdminService {
     await this.userRepository.save(user);
 
     await this.auditService.logAction({
-      userAccountId: performedByUserId || id,
+      userAccountId: performedByAccount ? performedByAccount.id : id,
       action: 'USER_SOFT_DELETED',
       description: `Soft deleted user account #${id}`,
       metadata: { targetUserId: id },

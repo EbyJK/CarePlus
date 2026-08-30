@@ -29,8 +29,9 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
   });
   const [savingEdit, setSavingEdit] = useState(false);
 
-  const currentUserRole = (currentUser?.role || 'admin').toLowerCase();
-  const canManage = currentUserRole === 'admin' || currentUserRole === 'superadmin';
+  const currentUserRoleStr = (currentUser?.role || '').toLowerCase();
+  const isSuperAdmin = currentUserRoleStr === 'superadmin' || currentUserRoleStr.includes('super');
+  const canManage = currentUserRoleStr === 'admin' || currentUserRoleStr === 'superadmin' || isSuperAdmin;
 
   useEffect(() => {
     fetchCareTeam();
@@ -62,7 +63,7 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
     try {
       await ensureAdminToken();
       const res = await api.getUsers();
-
+      
       let userList = [];
       if (Array.isArray(res)) {
         userList = res;
@@ -101,8 +102,14 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
   };
 
   const handleToggleStatus = async (userObj) => {
-    if (userObj.role?.toLowerCase() === 'superadmin' && currentUserRole !== 'superadmin') {
-      setActionStatus({ type: 'error', msg: 'Superadmin accounts are protected and cannot be deactivated by Admins.' });
+    const isSuperadminTarget = userObj.role?.toLowerCase() === 'superadmin';
+    const isSelf = currentUser && (
+      String(currentUser.id) === String(userObj.id) ||
+      (currentUser.email && userObj.email && currentUser.email.toLowerCase() === userObj.email.toLowerCase())
+    );
+
+    if (isSuperadminTarget && !isSuperAdmin && !isSelf) {
+      setActionStatus({ type: 'error', msg: 'Superadmin accounts are protected and cannot be deactivated by standard Admins.' });
       return;
     }
 
@@ -121,8 +128,20 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
   };
 
   const handleRoleChange = async (userObj, newRole) => {
-    if (userObj.role?.toLowerCase() === 'superadmin' && currentUserRole !== 'superadmin') {
-      setActionStatus({ type: 'error', msg: 'Superadmin role changes require root Superadmin privilege.' });
+    const isSuperadminTarget = userObj.role?.toLowerCase() === 'superadmin';
+    const isAssigningSuperadmin = newRole?.toLowerCase() === 'superadmin';
+    const isSelf = currentUser && (
+      String(currentUser.id) === String(userObj.id) ||
+      (currentUser.email && userObj.email && currentUser.email.toLowerCase() === userObj.email.toLowerCase())
+    );
+
+    if (isAssigningSuperadmin && !isSuperAdmin) {
+      setActionStatus({ type: 'error', msg: 'Only a Superadmin can assign the SUPERADMIN role.' });
+      return;
+    }
+
+    if (isSuperadminTarget && !isSuperAdmin && !isSelf) {
+      setActionStatus({ type: 'error', msg: 'Superadmin accounts can only be modified by a Superadmin.' });
       return;
     }
 
@@ -131,7 +150,7 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
       await api.updateUser(userObj.id, { role: newRole });
       setActionStatus({
         type: 'success',
-        msg: `Role for ${userObj.firstName} updated successfully!`,
+        msg: `Role for ${userObj.firstName} updated successfully to ${newRole.toUpperCase()}!`,
       });
       fetchCareTeam();
     } catch (err) {
@@ -140,8 +159,14 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
   };
 
   const handleDeleteUser = async (userObj) => {
-    if (userObj.role?.toLowerCase() === 'superadmin' && currentUserRole !== 'superadmin') {
-      setActionStatus({ type: 'error', msg: 'Superadmin accounts can only be managed by root Superadmin.' });
+    const isSuperadminTarget = userObj.role?.toLowerCase() === 'superadmin';
+    const isSelf = currentUser && (
+      String(currentUser.id) === String(userObj.id) ||
+      (currentUser.email && userObj.email && currentUser.email.toLowerCase() === userObj.email.toLowerCase())
+    );
+
+    if (isSuperadminTarget && !isSuperAdmin && !isSelf) {
+      setActionStatus({ type: 'error', msg: 'Superadmin accounts can only be managed by a Superadmin.' });
       return;
     }
 
@@ -202,7 +227,7 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
     const idMatches = cleanQuery.length > 0 && (u.id || '').toString().includes(cleanQuery);
 
     const userRole = (u.role || 'user').toLowerCase();
-    const roleMatches = roleFilter === 'all'
+    const roleMatches = roleFilter === 'all' 
       || (roleFilter === 'user' && (userRole === 'user' || userRole === 'staff'))
       || (roleFilter === 'admin' && (userRole === 'admin' || userRole === 'superadmin'));
 
@@ -256,7 +281,7 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
           <Search size={16} className="search-icon" />
           <input
             type="text"
-            placeholder="Search by staff name, email, or ID ..."
+            placeholder="Search by staff name, email, or ID..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -303,7 +328,11 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
           {filteredUsers.map((u, idx) => {
             const avatarUrl = u.avatar || SAMPLE_AVATARS[idx % SAMPLE_AVATARS.length];
             const isSuperadminTarget = u.role?.toLowerCase() === 'superadmin';
-            const isProtected = isSuperadminTarget && currentUserRole !== 'superadmin';
+            const isSelf = currentUser && (
+              String(currentUser.id) === String(u.id) ||
+              (currentUser.email && u.email && currentUser.email.toLowerCase() === u.email.toLowerCase())
+            );
+            const isProtected = isSuperadminTarget && !isSuperAdmin && !isSelf;
             const displayRoleLabel = (u.role?.toLowerCase() === 'user' || u.role?.toLowerCase() === 'staff') ? 'STAFF' : u.role?.toUpperCase();
 
             return (
@@ -318,9 +347,9 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
                   <div className="flex-align gap-2">
                     <h4 className="member-name-lg">{u.firstName} {u.lastName}</h4>
                     <span className={`badge badge-${(displayRoleLabel === 'STAFF' ? 'user' : displayRoleLabel.toLowerCase())}`}>{displayRoleLabel}</span>
-                    {isProtected && (
-                      <span className="badge badge-purple flex-align gap-1" title="Root Superadmin record is protected">
-                        <Lock size={12} /> Protected
+                    {isSuperadminTarget && (
+                      <span className="badge badge-purple flex-align gap-1" title="Root Superadmin Record">
+                        <Lock size={12} /> Root Superadmin
                       </span>
                     )}
                   </div>
@@ -368,7 +397,7 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
                       >
                         <option value="user">STAFF</option>
                         <option value="admin">ADMIN</option>
-                        <option value="superadmin">SUPERADMIN</option>
+                        {isSuperAdmin && <option value="superadmin">SUPERADMIN</option>}
                       </select>
 
                       <button
@@ -459,7 +488,7 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
                   >
                     <option value="user">STAFF (Physician / Clinical)</option>
                     <option value="admin">ADMIN</option>
-                    <option value="superadmin">SUPERADMIN</option>
+                    {isSuperAdmin && <option value="superadmin">SUPERADMIN</option>}
                   </select>
                 </div>
               </div>

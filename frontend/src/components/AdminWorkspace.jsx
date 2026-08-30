@@ -315,6 +315,7 @@ export default function AdminWorkspace({ user, onLogout, onUpdateUser }) {
           {activeTab === 'team' && (
             <CareTeamTab
               onNavigateToAddMember={() => setActiveTab('add-member')}
+              currentUser={user}
             />
           )}
 

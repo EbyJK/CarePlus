@@ -1,4 +1,4 @@
-﻿import {
+import {
   Controller,
   Get,
   Post,
@@ -22,25 +22,26 @@ import { UserManagementRolesGuard } from '../guards/user-management-roles.guard'
 import { UserRoles } from '../decorators/user-roles.decorator';
 import { UserManagementRole } from '../enums/user-management-role.enum';
 import { CurrentAccount } from '../decorators/current-account.decorator';
+import { UserAccount } from '../entities/user-account.entity';
 
-@ApiTags('2. User Management - Admin')
+@ApiTags('User Management Admin API')
 @ApiBearerAuth()
-@Controller('user-management/users')
 @UseGuards(UserJwtAuthGuard, UserManagementRolesGuard)
+@Controller('user-management/users')
 export class UserAccountAdminController {
   constructor(
     private readonly adminService: UserAccountAdminService,
     private readonly auditService: UserAccountAuditService,
   ) {}
 
-  @ApiOperation({ summary: 'Create a new user account (Admin only)' })
+  @ApiOperation({ summary: 'Create user account (Admin / Superadmin)' })
   @Post()
   @UserRoles(UserManagementRole.SUPERADMIN, UserManagementRole.ADMIN)
   async create(
     @Body() dto: CreateUserAccountDto,
-    @CurrentAccount('id') adminId: number,
+    @CurrentAccount() adminAccount: UserAccount,
   ) {
-    const user = await this.adminService.create(dto, adminId);
+    const user = await this.adminService.create(dto, adminAccount);
     return {
       statusCode: HttpStatus.CREATED,
       message: 'User account created successfully',
@@ -48,34 +49,26 @@ export class UserAccountAdminController {
     };
   }
 
-  @ApiOperation({ summary: 'List all users with pagination and search' })
+  @ApiOperation({ summary: 'List user accounts with pagination & filters' })
   @Get()
-  @UserRoles(
-    UserManagementRole.SUPERADMIN,
-    UserManagementRole.ADMIN,
-    UserManagementRole.SUPERVISOR,
-  )
+  @UserRoles(UserManagementRole.SUPERADMIN, UserManagementRole.ADMIN)
   async findAll(@Query() query: UserPaginationQueryDto) {
     const [users, total] = await this.adminService.findAll(query);
     return {
       statusCode: HttpStatus.OK,
-      message: 'User list fetched successfully',
+      message: 'User accounts retrieved successfully',
       data: users,
-      pagination: {
+      meta: {
         total,
-        limit: Number(query.limit || 10),
-        skip: Number(query.skip || 0),
+        page: Math.floor((query.skip || 0) / (query.limit || 10)) + 1,
+        limit: query.limit || 10,
       },
     };
   }
 
-  @ApiOperation({ summary: 'Get user details by ID' })
+  @ApiOperation({ summary: 'Get single user account by ID' })
   @Get(':id')
-  @UserRoles(
-    UserManagementRole.SUPERADMIN,
-    UserManagementRole.ADMIN,
-    UserManagementRole.SUPERVISOR,
-  )
+  @UserRoles(UserManagementRole.SUPERADMIN, UserManagementRole.ADMIN)
   async findOne(@Param('id', ParseIntPipe) id: number) {
     const user = await this.adminService.findOne(id);
     return {
@@ -91,9 +84,9 @@ export class UserAccountAdminController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateUserAccountDto,
-    @CurrentAccount('id') adminId: number,
+    @CurrentAccount() adminAccount: UserAccount,
   ) {
-    const user = await this.adminService.update(id, dto, adminId);
+    const user = await this.adminService.update(id, dto, adminAccount);
     return {
       statusCode: HttpStatus.OK,
       message: 'User account updated successfully',
@@ -107,9 +100,9 @@ export class UserAccountAdminController {
   async toggleActive(
     @Param('id', ParseIntPipe) id: number,
     @Body('isActive') isActive: boolean,
-    @CurrentAccount('id') adminId: number,
+    @CurrentAccount() adminAccount: UserAccount,
   ) {
-    const user = await this.adminService.toggleActive(id, isActive, adminId);
+    const user = await this.adminService.toggleActive(id, isActive, adminAccount);
     return {
       statusCode: HttpStatus.OK,
       message: `User status changed to ${isActive ? 'active' : 'inactive'}`,
@@ -122,34 +115,24 @@ export class UserAccountAdminController {
   @UserRoles(UserManagementRole.SUPERADMIN, UserManagementRole.ADMIN)
   async remove(
     @Param('id', ParseIntPipe) id: number,
-    @CurrentAccount('id') adminId: number,
+    @CurrentAccount() adminAccount: UserAccount,
   ) {
-    await this.adminService.remove(id, adminId);
+    await this.adminService.remove(id, adminAccount);
     return {
       statusCode: HttpStatus.OK,
       message: 'User account soft deleted successfully',
-      data: null,
     };
   }
 
-  @ApiOperation({ summary: 'Get user action audit logs' })
+  @ApiOperation({ summary: 'Get user account audit logs' })
   @Get(':id/audit-logs')
   @UserRoles(UserManagementRole.SUPERADMIN, UserManagementRole.ADMIN)
-  async getAuditLogs(
-    @Param('id', ParseIntPipe) id: number,
-    @Query('limit') limit = 20,
-    @Query('skip') skip = 0,
-  ) {
-    const [logs, total] = await this.auditService.getAuditLogsForUser(
-      id,
-      Number(limit),
-      Number(skip),
-    );
+  async getAuditLogs(@Param('id', ParseIntPipe) id: number) {
+    const logs = await this.auditService.getAuditLogsForUser(id);
     return {
       statusCode: HttpStatus.OK,
-      message: 'User audit logs fetched successfully',
+      message: 'User audit logs retrieved successfully',
       data: logs,
-      pagination: { total, limit: Number(limit), skip: Number(skip) },
     };
   }
 }
