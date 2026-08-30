@@ -63,7 +63,7 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
     try {
       await ensureAdminToken();
       const res = await api.getUsers();
-      
+
       let userList = [];
       if (Array.isArray(res)) {
         userList = res;
@@ -227,7 +227,7 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
     const idMatches = cleanQuery.length > 0 && (u.id || '').toString().includes(cleanQuery);
 
     const userRole = (u.role || 'user').toLowerCase();
-    const roleMatches = roleFilter === 'all' 
+    const roleMatches = roleFilter === 'all'
       || (roleFilter === 'user' && (userRole === 'user' || userRole === 'staff'))
       || (roleFilter === 'admin' && (userRole === 'admin' || userRole === 'superadmin'));
 
@@ -349,7 +349,7 @@ export default function CareTeamTab({ onNavigateToAddMember, currentUser }) {
                     <span className={`badge badge-${(displayRoleLabel === 'STAFF' ? 'user' : displayRoleLabel.toLowerCase())}`}>{displayRoleLabel}</span>
                     {isSuperadminTarget && (
                       <span className="badge badge-purple flex-align gap-1" title="Root Superadmin Record">
-                        <Lock size={12} /> Root Superadmin
+                        <Lock size={12} /> PROTECTED
                       </span>
                     )}
                   </div>
