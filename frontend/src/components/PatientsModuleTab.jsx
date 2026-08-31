@@ -1,21 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
-import { 
-  HeartPulse, 
-  Activity, 
-  Plus, 
-  Trash2, 
-  Mail, 
-  Search, 
-  RefreshCw, 
-  CheckCircle2, 
-  AlertCircle, 
-  FileText, 
-  Download, 
-  Send, 
-  UserCheck, 
-  Shield, 
-  X 
+import {
+  HeartPulse,
+  Activity,
+  Plus,
+  Trash2,
+  Mail,
+  Search,
+  RefreshCw,
+  CheckCircle2,
+  AlertCircle,
+  FileText,
+  Download,
+  Send,
+  UserCheck,
+  Shield,
+  X
 } from 'lucide-react';
 
 export default function PatientsModuleTab({ currentUser, isAdmin = false }) {
@@ -127,10 +127,10 @@ export default function PatientsModuleTab({ currentUser, isAdmin = false }) {
         prev.map((p) =>
           p.id === patientId
             ? {
-                ...p,
-                assignedStaffId: String(newStaffId),
-                assignedStaffName: updated.assignedStaffName || p.assignedStaffName,
-              }
+              ...p,
+              assignedStaffId: String(newStaffId),
+              assignedStaffName: updated.assignedStaffName || p.assignedStaffName,
+            }
             : p
         )
       );

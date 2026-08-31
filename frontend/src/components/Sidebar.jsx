@@ -40,7 +40,7 @@ export default function Sidebar({ activeTab, setActiveTab }) {
           onClick={() => setActiveTab('sms')}
         >
           <MessageSquare size={18} />
-          <span>Patient SMS Alerts</span>
+          <span>SMS Alerts</span>
         </button>
 
         <button

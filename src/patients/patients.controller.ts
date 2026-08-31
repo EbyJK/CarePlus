@@ -24,7 +24,7 @@ import { UserManagementRole } from '../user-management/enums/user-management-rol
 @UseGuards(UserJwtAuthGuard, UserManagementRolesGuard)
 @Controller('patients')
 export class PatientsController {
-  constructor(private readonly patientsService: PatientsService) {}
+  constructor(private readonly patientsService: PatientsService) { }
 
   @Get()
   @ApiOperation({ summary: 'Get patients (Staff receives assigned roster; Admin receives master roster)' })

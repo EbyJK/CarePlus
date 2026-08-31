@@ -227,7 +227,7 @@ export default function UserManagementTab() {
             <h3>2. User Authentication (Login)</h3>
           </div>
           <p className="card-desc">Authenticates credentials and stores JWT <code>accessToken</code> for protected admin API calls.</p>
-          
+
           {currentUser ? (
             <div className="logged-in-box">
               <div className="user-badge">
@@ -281,7 +281,7 @@ export default function UserManagementTab() {
             <h3>3. Protected Admin Creation</h3>
           </div>
           <p className="card-desc">Protected endpoint (Requires Admin JWT Token). Allows logged-in Admin to create new users/admins.</p>
-          
+
           {!token ? (
             <div className="alert alert-warning">
               <AlertCircle size={16} />

@@ -29,19 +29,19 @@ export default function SmsModuleTab() {
   const handleSendSms = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setSendResult({ type: 'info', msg: 'Dispatching Patient SMS notification via Twilio Gateway...' });
+    setSendResult({ type: 'info', msg: 'Dispatching  SMS notification via Twilio Gateway...' });
     try {
       const res = await api.sendSms({
         to: smsData.to,
         message: smsData.message,
       });
-      
+
       const isSent = res.status === 'SENT' || res.providerMessageId || !res.errorMessage;
 
       setSendResult({
         type: isSent ? 'success' : 'error',
-        msg: isSent 
-          ? `Patient SMS Sent Successfully! Provider: ${res.provider?.toUpperCase() || 'TWILIO'} | ID: ${res.providerMessageId || res.id || 'SENT'}`
+        msg: isSent
+          ? ` SMS Sent Successfully! Provider: ${res.provider?.toUpperCase() || 'TWILIO'} | ID: ${res.providerMessageId || res.id || 'SENT'}`
           : `SMS Dispatch Status: ${res.status || 'FAILED'} — ${res.errorMessage || 'Unknown error'}`,
         data: res,
       });
@@ -59,7 +59,7 @@ export default function SmsModuleTab() {
   return (
     <div className="tab-container">
       <div className="tab-header">
-        <h2><MessageSquare className="icon-header text-emerald" /> Patient SMS Dispatch Center</h2>
+        <h2><MessageSquare className="icon-header text-emerald" />  SMS Dispatch Center</h2>
         <p className="subtitle">Dispatch direct SMS patient notifications for prescription pickups and emergency appointments.</p>
       </div>
 
@@ -119,7 +119,7 @@ export default function SmsModuleTab() {
             </div>
 
             <button type="submit" className="btn btn-emerald btn-lg" disabled={loading}>
-              <Send size={16} /> {loading ? 'Dispatching SMS...' : 'Send Patient SMS Now'}
+              <Send size={16} /> {loading ? 'Dispatching SMS...' : 'Send SMS Now'}
             </button>
           </form>
 

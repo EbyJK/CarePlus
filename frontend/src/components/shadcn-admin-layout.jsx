@@ -2,27 +2,27 @@ import React from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar } from "@/components/ui/avatar"
-import { 
-  HeartPulse, 
-  Shield, 
-  LogOut, 
-  RefreshCw, 
-  Activity, 
-  Users, 
-  UserPlus, 
-  MessageSquare, 
-  Radio, 
-  User 
+import {
+  HeartPulse,
+  Shield,
+  LogOut,
+  RefreshCw,
+  Activity,
+  Users,
+  UserPlus,
+  MessageSquare,
+  Radio,
+  User
 } from "lucide-react"
 
-export default function ShadcnAdminLayout({ 
-  user, 
-  activeTab, 
-  setActiveTab, 
-  onLogout, 
-  onRefresh, 
+export default function ShadcnAdminLayout({
+  user,
+  activeTab,
+  setActiveTab,
+  onLogout,
+  onRefresh,
   children,
-  isAdmin = true 
+  isAdmin = true
 }) {
   const roleTitle = user?.role?.toUpperCase() || (isAdmin ? "ADMIN" : "USER")
 
@@ -49,9 +49,8 @@ export default function ShadcnAdminLayout({
                 ADMINISTRATIVE MANAGEMENT
               </div>
               <button
-                className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
-                  activeTab === 'overview' ? 'bg-gradient-to-r from-purple-500/20 to-cyan-500/20 text-cyan-400 border-l-4 border-cyan-400' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
-                }`}
+                className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${activeTab === 'overview' ? 'bg-gradient-to-r from-purple-500/20 to-cyan-500/20 text-cyan-400 border-l-4 border-cyan-400' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+                  }`}
                 onClick={() => setActiveTab('overview')}
               >
                 <Activity size={18} />
@@ -59,9 +58,8 @@ export default function ShadcnAdminLayout({
               </button>
 
               <button
-                className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
-                  activeTab === 'team' ? 'bg-gradient-to-r from-purple-500/20 to-cyan-500/20 text-cyan-400 border-l-4 border-cyan-400' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
-                }`}
+                className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${activeTab === 'team' ? 'bg-gradient-to-r from-purple-500/20 to-cyan-500/20 text-cyan-400 border-l-4 border-cyan-400' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+                  }`}
                 onClick={() => setActiveTab('team')}
               >
                 <Users size={18} />
@@ -69,9 +67,8 @@ export default function ShadcnAdminLayout({
               </button>
 
               <button
-                className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
-                  activeTab === 'add-member' ? 'bg-gradient-to-r from-purple-500/20 to-cyan-500/20 text-cyan-400 border-l-4 border-cyan-400' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
-                }`}
+                className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${activeTab === 'add-member' ? 'bg-gradient-to-r from-purple-500/20 to-cyan-500/20 text-cyan-400 border-l-4 border-cyan-400' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+                  }`}
                 onClick={() => setActiveTab('add-member')}
               >
                 <UserPlus size={18} />
@@ -82,19 +79,17 @@ export default function ShadcnAdminLayout({
                 SYSTEM DISPATCH & ALERTS
               </div>
               <button
-                className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
-                  activeTab === 'sms' ? 'bg-gradient-to-r from-purple-500/20 to-cyan-500/20 text-cyan-400 border-l-4 border-cyan-400' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
-                }`}
+                className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${activeTab === 'sms' ? 'bg-gradient-to-r from-purple-500/20 to-cyan-500/20 text-cyan-400 border-l-4 border-cyan-400' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+                  }`}
                 onClick={() => setActiveTab('sms')}
               >
                 <MessageSquare size={18} />
-                <span>Patient SMS Center</span>
+                <span> SMS Center</span>
               </button>
 
               <button
-                className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
-                  activeTab === 'telegram' ? 'bg-gradient-to-r from-purple-500/20 to-cyan-500/20 text-cyan-400 border-l-4 border-cyan-400' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
-                }`}
+                className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${activeTab === 'telegram' ? 'bg-gradient-to-r from-purple-500/20 to-cyan-500/20 text-cyan-400 border-l-4 border-cyan-400' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+                  }`}
                 onClick={() => setActiveTab('telegram')}
               >
                 <Radio size={18} />
@@ -105,9 +100,8 @@ export default function ShadcnAdminLayout({
                 SECURITY & PROFILE
               </div>
               <button
-                className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
-                  activeTab === 'profile' ? 'bg-gradient-to-r from-purple-500/20 to-cyan-500/20 text-cyan-400 border-l-4 border-cyan-400' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
-                }`}
+                className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${activeTab === 'profile' ? 'bg-gradient-to-r from-purple-500/20 to-cyan-500/20 text-cyan-400 border-l-4 border-cyan-400' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+                  }`}
                 onClick={() => setActiveTab('profile')}
               >
                 <User size={18} />
@@ -120,9 +114,8 @@ export default function ShadcnAdminLayout({
                 STAFF WORKSPACE
               </div>
               <button
-                className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
-                  activeTab === 'overview' ? 'bg-gradient-to-r from-purple-500/20 to-cyan-500/20 text-cyan-400 border-l-4 border-cyan-400' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
-                }`}
+                className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${activeTab === 'overview' ? 'bg-gradient-to-r from-purple-500/20 to-cyan-500/20 text-cyan-400 border-l-4 border-cyan-400' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+                  }`}
                 onClick={() => setActiveTab('overview')}
               >
                 <Activity size={18} />
@@ -130,19 +123,17 @@ export default function ShadcnAdminLayout({
               </button>
 
               <button
-                className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
-                  activeTab === 'sms' ? 'bg-gradient-to-r from-purple-500/20 to-cyan-500/20 text-cyan-400 border-l-4 border-cyan-400' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
-                }`}
+                className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${activeTab === 'sms' ? 'bg-gradient-to-r from-purple-500/20 to-cyan-500/20 text-cyan-400 border-l-4 border-cyan-400' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+                  }`}
                 onClick={() => setActiveTab('sms')}
               >
                 <MessageSquare size={18} />
-                <span>Patient SMS Alerts</span>
+                <span> SMS Alerts</span>
               </button>
 
               <button
-                className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
-                  activeTab === 'telegram' ? 'bg-gradient-to-r from-purple-500/20 to-cyan-500/20 text-cyan-400 border-l-4 border-cyan-400' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
-                }`}
+                className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${activeTab === 'telegram' ? 'bg-gradient-to-r from-purple-500/20 to-cyan-500/20 text-cyan-400 border-l-4 border-cyan-400' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+                  }`}
                 onClick={() => setActiveTab('telegram')}
               >
                 <Radio size={18} />
@@ -153,9 +144,8 @@ export default function ShadcnAdminLayout({
                 ACCOUNT
               </div>
               <button
-                className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
-                  activeTab === 'profile' ? 'bg-gradient-to-r from-purple-500/20 to-cyan-500/20 text-cyan-400 border-l-4 border-cyan-400' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
-                }`}
+                className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${activeTab === 'profile' ? 'bg-gradient-to-r from-purple-500/20 to-cyan-500/20 text-cyan-400 border-l-4 border-cyan-400' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+                  }`}
                 onClick={() => setActiveTab('profile')}
               >
                 <User size={18} />

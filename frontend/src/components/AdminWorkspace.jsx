@@ -6,18 +6,18 @@ import PatientsModuleTab from './PatientsModuleTab';
 import SmsModuleTab from './SmsModuleTab';
 import TelegramModuleTab from './TelegramModuleTab';
 import ProfileSettingsTab from './ProfileSettingsTab';
-import { 
-  HeartPulse, 
-  Users, 
-  Shield, 
-  Activity, 
-  MessageSquare, 
-  Radio, 
-  User, 
-  LogOut, 
-  Sparkles, 
-  RefreshCw, 
-  CheckCircle2, 
+import {
+  HeartPulse,
+  Users,
+  Shield,
+  Activity,
+  MessageSquare,
+  Radio,
+  User,
+  LogOut,
+  Sparkles,
+  RefreshCw,
+  CheckCircle2,
   UserPlus
 } from 'lucide-react';
 
@@ -116,7 +116,7 @@ export default function AdminWorkspace({ user, onLogout, onUpdateUser }) {
             onClick={() => setActiveTab('sms')}
           >
             <MessageSquare size={18} />
-            <span>Patient SMS Center</span>
+            <span> SMS Center</span>
           </button>
 
           <button
@@ -298,7 +298,7 @@ export default function AdminWorkspace({ user, onLogout, onUpdateUser }) {
                   <div className="shortcut-box" onClick={() => setActiveTab('sms')}>
                     <div className="card-header mb-1">
                       <MessageSquare size={18} className="text-emerald" />
-                      <h4>Patient SMS Dispatcher</h4>
+                      <h4> SMS Dispatcher</h4>
                     </div>
                     <p className="card-desc">Send immediate SMS alerts to patients and review logs.</p>
                     <button className="btn btn-emerald btn-sm mt-3">Open SMS Center &bull;&gt;</button>
@@ -333,7 +333,7 @@ export default function AdminWorkspace({ user, onLogout, onUpdateUser }) {
             <ProfileSettingsTab
               currentUser={user}
               onUpdateUser={onUpdateUser}
-              onOpenGoogleAuth={() => {}}
+              onOpenGoogleAuth={() => { }}
             />
           )}
         </div>

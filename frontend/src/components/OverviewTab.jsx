@@ -1,16 +1,16 @@
 import React from 'react';
-import { 
-  Users, 
-  MessageSquare, 
-  Radio, 
-  Activity, 
-  TrendingUp, 
-  CheckCircle2, 
-  Plus, 
-  Send, 
-  Sparkles, 
-  ShieldCheck, 
-  Clock, 
+import {
+  Users,
+  MessageSquare,
+  Radio,
+  Activity,
+  TrendingUp,
+  CheckCircle2,
+  Plus,
+  Send,
+  Sparkles,
+  ShieldCheck,
+  Clock,
   ChevronRight,
   UserCheck
 } from 'lucide-react';
@@ -93,7 +93,7 @@ export default function OverviewTab({ currentUser, onNavigate, onOpenAddMember, 
             </span>
           </div>
           <div className="kpi-value">892</div>
-          <div className="kpi-label">Patient SMS Alerts Sent</div>
+          <div className="kpi-label"> SMS Alerts Sent</div>
           <div className="kpi-footer">Twilio & Postgres Audit Synced</div>
         </div>
 
@@ -218,7 +218,7 @@ export default function OverviewTab({ currentUser, onNavigate, onOpenAddMember, 
                 <MessageSquare size={20} />
               </div>
               <div className="shortcut-info">
-                <strong>Patient SMS Dispatcher</strong>
+                <strong> SMS Dispatcher</strong>
                 <span>Send SMS alerts & view Postgres delivery log history.</span>
               </div>
               <ChevronRight size={18} className="shortcut-arrow" />

@@ -3,16 +3,16 @@ import PatientsModuleTab from './PatientsModuleTab';
 import SmsModuleTab from './SmsModuleTab';
 import TelegramModuleTab from './TelegramModuleTab';
 import ProfileSettingsTab from './ProfileSettingsTab';
-import { 
-  HeartPulse, 
-  User, 
-  MessageSquare, 
-  Radio, 
-  LogOut, 
-  Sparkles, 
-  Activity, 
-  Shield, 
-  Send 
+import {
+  HeartPulse,
+  User,
+  MessageSquare,
+  Radio,
+  LogOut,
+  Sparkles,
+  Activity,
+  Shield,
+  Send
 } from 'lucide-react';
 
 export default function StaffWorkspace({ user, onLogout, onUpdateUser }) {
@@ -60,7 +60,7 @@ export default function StaffWorkspace({ user, onLogout, onUpdateUser }) {
             onClick={() => setActiveTab('sms')}
           >
             <MessageSquare size={18} />
-            <span>Patient SMS Alerts</span>
+            <span> SMS Alerts</span>
           </button>
 
           <button
@@ -148,7 +148,7 @@ export default function StaffWorkspace({ user, onLogout, onUpdateUser }) {
                     <HeartPulse size={16} /> My Assigned Patients
                   </button>
                   <button className="btn btn-emerald btn-sm" onClick={() => setActiveTab('sms')}>
-                    <MessageSquare size={16} /> Send Patient SMS
+                    <MessageSquare size={16} /> Send SMS
                   </button>
                 </div>
               </div>
@@ -176,7 +176,7 @@ export default function StaffWorkspace({ user, onLogout, onUpdateUser }) {
                   <div className="shortcut-box" onClick={() => setActiveTab('sms')}>
                     <div className="card-header mb-1">
                       <MessageSquare size={18} className="text-emerald" />
-                      <h4>Patient SMS Dispatcher</h4>
+                      <h4> SMS Dispatcher</h4>
                     </div>
                     <p className="card-desc">Compose SMS alerts for prescription pickups and appointments.</p>
                     <button className="btn btn-emerald btn-sm mt-3">
@@ -211,7 +211,7 @@ export default function StaffWorkspace({ user, onLogout, onUpdateUser }) {
             <ProfileSettingsTab
               currentUser={user}
               onUpdateUser={onUpdateUser}
-              onOpenGoogleAuth={() => {}}
+              onOpenGoogleAuth={() => { }}
             />
           )}
         </div>

@@ -21,7 +21,7 @@ export default function AddTeamMemberTab({ onNavigateToDirectory }) {
     setSubmitStatus({ type: 'info', msg: 'Registering new staff member...' });
     try {
       await api.registerUser(newMember);
-      
+
       setSubmitStatus({
         type: 'success',
         msg: `Member ${newMember.firstName} ${newMember.lastName} added successfully!`,
@@ -126,7 +126,7 @@ export default function AddTeamMemberTab({ onNavigateToDirectory }) {
             </div>
 
             <div className="form-group mb-4">
-              <label>Mobile Phone Number (for Patient SMS Alerts)</label>
+              <label>Mobile Phone Number (for  SMS Alerts)</label>
               <input
                 type="text"
                 placeholder="+14155552671"
